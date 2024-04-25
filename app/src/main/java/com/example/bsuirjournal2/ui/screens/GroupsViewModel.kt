@@ -1,0 +1,84 @@
+/*
+ * Copyright (C) 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.bsuirjournal2.ui.screens
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.bsuirjournal2.GroupNumbersApplication
+import com.example.bsuirjournal2.data.GroupNumbersRepository
+import com.example.bsuirjournal2.model.Group
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
+
+/**
+ * UI state for the Home screen
+ */
+sealed interface GroupsUiState {
+    data class Success(val groups: List<Group>) : GroupsUiState
+    object Error : GroupsUiState
+    object Loading : GroupsUiState
+}
+
+class GroupsViewModel(private val groupNumbersRepository: GroupNumbersRepository) : ViewModel() {
+    /** The mutable State that stores the status of the most recent request */
+    var groupsUiState: GroupsUiState by mutableStateOf(GroupsUiState.Loading)
+        private set
+
+    /**
+     * Call getMarsPhotos() on init so we can display status immediately.
+     */
+    init {
+        getGroupNumbers()
+    }
+
+    /**
+     * Gets Mars photos information from the Mars API Retrofit service and updates the
+     * [Group] [List] [MutableList].
+     */
+    fun getGroupNumbers() {
+        viewModelScope.launch {
+            groupsUiState = GroupsUiState.Loading
+            groupsUiState = try {
+                GroupsUiState.Success(groupNumbersRepository.getGroupNumbers())
+            } catch (e: IOException) {
+                GroupsUiState.Error
+            } catch (e: HttpException) {
+                GroupsUiState.Error
+            }
+        }
+    }
+
+    /**
+     * Factory for [GroupsViewModel] that takes [GroupNumbersRepository] as a dependency
+     */
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as GroupNumbersApplication)
+                val groupNumbersRepository = application.container.groupNumbersRepository
+                GroupsViewModel(groupNumbersRepository = groupNumbersRepository)
+            }
+        }
+    }
+}
