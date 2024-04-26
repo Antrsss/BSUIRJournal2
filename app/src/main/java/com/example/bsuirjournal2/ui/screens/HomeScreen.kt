@@ -33,16 +33,24 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
+import com.example.bsuirjournal2.data.DataSource
+import com.example.bsuirjournal2.data.UiState
 import com.example.bsuirjournal2.model.Group
+import com.example.bsuirjournal2.ui.JournalViewModel
 
 @Composable
 fun HomeScreen(
+    viewModel: JournalViewModel,
+    navController: NavHostController,
     groupsUiState: GroupsUiState,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
@@ -50,9 +58,22 @@ fun HomeScreen(
 ) {
     when (groupsUiState) {
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
-        is GroupsUiState.Success -> PhotosGridScreen(
-            groupsUiState.groups, contentPadding = contentPadding, modifier = modifier.fillMaxWidth()
-        )
+        is GroupsUiState.Success -> {
+            DataSource.groupNumberOptions.clear()
+            DataSource.createGroupNumberOptions(groupsUiState.groups)
+            SelectGroupScreen(
+                groupNumberOptions = remember {
+                    mutableStateOf(DataSource.groupNumberOptions)
+                },
+                onGroupCardClicked = {
+                    viewModel.setGroup(it)
+                    DataSource.currentGroup = it
+                    navController.navigate(BSUIRJournalScreen.Main.name)
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+        }
         is GroupsUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
     }
 }
@@ -86,43 +107,6 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
         Button(onClick = retryAction) {
             Text(stringResource(R.string.retry))
         }
-    }
-}
-
-/**
- * The home screen displaying photo grid.
- */
-@Composable
-fun PhotosGridScreen(
-    groups: List<Group>,
-    modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(150.dp),
-        modifier = modifier.padding(horizontal = 4.dp),
-        contentPadding = contentPadding,
-    ) {
-        items(items = groups, key = { group -> group.id }) { group ->
-            MarsPhotoCard(
-                group,
-                modifier = modifier
-                    .padding(4.dp)
-                    .fillMaxWidth()
-                    .aspectRatio(1.5f)
-            )
-        }
-    }
-}
-
-@Composable
-fun MarsPhotoCard(group: Group, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Text(text = group.name)
     }
 }
 

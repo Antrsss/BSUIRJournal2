@@ -6,7 +6,8 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun MainScreen(
+    selectedGroup: String,
     modifier: Modifier
 ) {
-    Text(text = "MainScreen")
+    Text(text = selectedGroup)
 }

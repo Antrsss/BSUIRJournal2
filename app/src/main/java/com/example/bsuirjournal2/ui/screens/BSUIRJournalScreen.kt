@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.DataSource
+import com.example.bsuirjournal2.data.UiState
 
 enum class BSUIRJournalScreen() {
     Start,
@@ -82,23 +83,21 @@ fun BSUIRJournalApp (
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(route = BSUIRJournalScreen.Start.name) {
-                SelectGroupScreen(
-                    groupNumberOptions = remember {
-                        mutableStateOf(DataSource.groupNumberOptions)
-                    },
-                    onGroupCardClicked = {
-                        viewModel.setGroup(it)
-                        navController.navigate(BSUIRJournalScreen.Main.name)
-                    },
-                    modifier = Modifier
-                        .fillMaxSize()
+                val groupsViewModel: GroupsViewModel =
+                    viewModel(factory = GroupsViewModel.Factory)
+                HomeScreen(
+                    viewModel = viewModel,
+                    navController = navController,
+                    groupsUiState = groupsViewModel.groupsUiState,
+                    retryAction = groupsViewModel::getGroupNumbers,
                 )
             }
             composable(route = BSUIRJournalScreen.Main.name) {
                 val context = LocalContext.current
-                val groupsViewModel: GroupsViewModel =
-                    viewModel(factory = GroupsViewModel.Factory)
-                HomeScreen(groupsUiState = groupsViewModel.groupsUiState, retryAction = groupsViewModel::getGroupNumbers)
+                MainScreen(
+                    selectedGroup = DataSource.currentGroup,
+                    modifier = Modifier
+                )
             }
         }
     }

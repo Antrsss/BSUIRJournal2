@@ -36,7 +36,7 @@ import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.ui.screens.HomeScreen
 import com.example.bsuirjournal2.ui.screens.GroupsViewModel
 
-@Composable
+/*@Composable
 fun GroupNumbersApp() {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
@@ -69,4 +69,4 @@ fun MarsTopAppBar(scrollBehavior: TopAppBarScrollBehavior, modifier: Modifier = 
         },
         modifier = modifier
     )
-}
+}*/
