@@ -35,7 +35,7 @@ import java.io.IOException
  * UI state for the Home screen
  */
 sealed interface GroupsUiState {
-    data class Success(val groups: List<Group>) : GroupsUiState
+    data class Success(val groups: List<Group>, val currentWeek: Int) : GroupsUiState
     object Error : GroupsUiState
     object Loading : GroupsUiState
 }
@@ -60,7 +60,7 @@ class GroupsViewModel(private val groupNumbersRepository: GroupNumbersRepository
         viewModelScope.launch {
             groupsUiState = GroupsUiState.Loading
             groupsUiState = try {
-                GroupsUiState.Success(groupNumbersRepository.getGroupNumbers())
+                GroupsUiState.Success(groupNumbersRepository.getGroupNumbers(), groupNumbersRepository.getCurrentWeek())
             } catch (e: IOException) {
                 GroupsUiState.Error
             } catch (e: HttpException) {

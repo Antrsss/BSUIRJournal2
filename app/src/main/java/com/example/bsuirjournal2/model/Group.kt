@@ -22,19 +22,13 @@ import kotlinx.serialization.Serializable
  * This data class defines a Mars photo which includes an ID, and the image URL.
  */
 
-/*val id: String,
-@SerialName(value = "img_src")
-val imgSrc: String*/
 @Serializable
 data class Group(
-    val name: String,
-    val facultyId: Int,
-    val facultyAbbrev: String,
-    val facultyName: String,
-    val specialityDepartmentEducationFormId: Int,
-    val specialityName: String,
-    val specialityAbbrev: String,
-    val course: Int,
-    val id: Int,
-    val calendarId: String,
+    val name: String, // 010101
+    val course: Int, // 3
+    val educationDegree: Int, // 1
+    val facultyAbbrev: String, // ФКП
+    val id: Int, // 23277
+    val specialityAbbrev: String, // ИСиТ(в ОПБ)
+    val specialityName: String, // Информационные системы и технологии (по направлениям)
 )

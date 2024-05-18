@@ -59,6 +59,7 @@ fun HomeScreen(
     when (groupsUiState) {
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is GroupsUiState.Success -> {
+            DataSource.currentWeek = groupsUiState.currentWeek
             DataSource.groupNumberOptions.clear()
             DataSource.createGroupNumberOptions(groupsUiState.groups)
             SelectGroupScreen(

@@ -17,7 +17,9 @@
 package com.example.bsuirjournal2.network
 
 import com.example.bsuirjournal2.model.Group
+import com.example.bsuirjournal2.model.Schedule
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 /**
  * A public interface that exposes the [getGroups] method
@@ -28,7 +30,11 @@ interface GroupsApiService {
      * The @GET annotation indicates that the "photos" endpoint will be requested with the GET
      * HTTP method
      */
-    //@GET("photos")
     @GET("student-groups")
     suspend fun getGroups(): List<Group>
+    @GET("schedule/current-week")
+    suspend fun getCurrentWeek(): Int
+    @GET("schedule")
+    /** Получение расписания группы **/
+    suspend fun getGroupSchedule(@Query("studentGroup") groupNumber: String): Schedule
 }

@@ -1,7 +1,5 @@
 package com.example.bsuirjournal2.ui.screens
 
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -16,8 +14,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -29,7 +25,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.DataSource
-import com.example.bsuirjournal2.data.UiState
 
 enum class BSUIRJournalScreen() {
     Start,
@@ -89,14 +84,21 @@ fun BSUIRJournalApp (
                     viewModel = viewModel,
                     navController = navController,
                     groupsUiState = groupsViewModel.groupsUiState,
-                    retryAction = groupsViewModel::getGroupNumbers,
+                    retryAction = { groupsViewModel::getGroupNumbers }
                 )
             }
             composable(route = BSUIRJournalScreen.Main.name) {
+                val scheduleViewModel: ScheduleViewModel =
+                    viewModel(factory = ScheduleViewModel.Factory)
+                val scheduleUiState = scheduleViewModel.scheduleUiState
                 val context = LocalContext.current
                 MainScreen(
+                    viewModel = viewModel,
+                    scheduleUiState = scheduleViewModel.scheduleUiState,
                     selectedGroup = DataSource.currentGroup,
-                    modifier = Modifier
+                    currentWeek = DataSource.currentWeek,
+                    retryAction = {},
+                    modifier =  Modifier
                 )
             }
         }
