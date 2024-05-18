@@ -21,7 +21,7 @@ fun MainScreen(
     when (scheduleUiState) {
         is ScheduleUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is ScheduleUiState.Success -> {
-            ScheduleHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
+            //ScheduleHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
 
             /*ScheduleScreen(listOfSubjects = )*/
         }
