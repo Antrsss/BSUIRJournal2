@@ -22,7 +22,7 @@ fun MainScreen(
         is ScheduleUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is ScheduleUiState.Success -> {
             //ScheduleHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
-
+            //
             /*ScheduleScreen(listOfSubjects = )*/
         }
         is ScheduleUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
