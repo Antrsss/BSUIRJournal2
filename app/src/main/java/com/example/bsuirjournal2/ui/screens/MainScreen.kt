@@ -35,28 +35,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.bsuirjournal2.R
-import com.example.bsuirjournal2.data.DataSource
-import com.example.bsuirjournal2.data.ScheduleHolder
+import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.ui.JournalViewModel
 
 @Composable
 fun MainScreen(
     viewModel: JournalViewModel,
     scheduleUiState: ScheduleUiState,
-    selectedGroup: String,
+    selectedGroup: String?,
     retryAction: () -> Unit,
     modifier: Modifier
 ) {
     when (scheduleUiState) {
         is ScheduleUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is ScheduleUiState.Success -> {
-            ScheduleHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
-            Log.d("ScheduleScreen", "Current week schedule: ${ScheduleHolder.currentWeekSchedule}")
-            ScheduleHolder.createListOfSubjects()
-            Log.d("ScheduleScreen", "${ScheduleHolder.listOfSubjects}")
+            GroupApiHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
+            Log.d("ScheduleScreen", "Current week schedule: ${GroupApiHolder.currentWeekSchedule}")
+            GroupApiHolder.createListOfSubjects()
+            Log.d("ScheduleScreen", "${GroupApiHolder.listOfSubjects}")
             ScheduleScreen(
-                listOfSubjects = ScheduleHolder.uniqueSubjects,
-                currentWeek = DataSource.currentWeek,
+                listOfSubjects = GroupApiHolder.uniqueSubjects,
+                currentWeek = GroupApiHolder.currentWeek,
                 modifier = Modifier
             )
         }
@@ -67,7 +66,7 @@ fun MainScreen(
 @Composable
 fun ScheduleScreen(
     listOfSubjects: List<String?>,
-    currentWeek: Int,
+    currentWeek: Int?,
     modifier: Modifier
 ) {
     Column(

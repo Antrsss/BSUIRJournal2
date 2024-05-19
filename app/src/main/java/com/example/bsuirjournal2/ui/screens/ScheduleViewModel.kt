@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bsuirjournal2.GroupNumbersApplication
-import com.example.bsuirjournal2.data.DataSource
+import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.data.GroupNumbersRepository
 import com.example.bsuirjournal2.model.Schedule
 import kotlinx.coroutines.launch
@@ -25,7 +25,7 @@ sealed interface ScheduleUiState {
 }
 
 class ScheduleViewModel(
-    val groupNumber: String,
+    val groupNumber: String?,
     val groupNumbersRepository: GroupNumbersRepository
 ) : ViewModel() {
     var scheduleUiState: ScheduleUiState by mutableStateOf(ScheduleUiState.Loading)
@@ -33,7 +33,7 @@ class ScheduleViewModel(
     init {
         getGroupSchedule(groupNumber = groupNumber)
     }
-    fun getGroupSchedule(groupNumber: String) {
+    fun getGroupSchedule(groupNumber: String?) {
         viewModelScope.launch {
             scheduleUiState = ScheduleUiState.Loading
             try {
@@ -58,7 +58,7 @@ class ScheduleViewModel(
             initializer {
                 val application = (this[APPLICATION_KEY] as GroupNumbersApplication)
                 val groupNumbersRepository = application.container.groupNumbersRepository
-                ScheduleViewModel(groupNumber = DataSource.currentGroup, groupNumbersRepository = groupNumbersRepository)
+                ScheduleViewModel(groupNumber = GroupApiHolder.currentGroup, groupNumbersRepository = groupNumbersRepository)
             }
         }
     }

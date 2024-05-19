@@ -1,18 +1,35 @@
 package com.example.bsuirjournal2.data
 
+import com.example.bsuirjournal2.model.Group
 import com.example.bsuirjournal2.model.Schedule
 
-object ScheduleHolder {
+object GroupApiHolder {
     var currentWeekSchedule: Schedule.Schedules? = null
-    var currentSubgroup: Int? = 0
+    var currentSubgroup: Int? = null
     var listOfSubjects: MutableList<String?> = mutableListOf()
     lateinit var uniqueSubjects: List<String?>
+
+    val groupNumberOptions: MutableList<String> = mutableListOf()
+    var currentGroup: String? = null
+    var currentWeek: Int? = null
+
+    fun createGroupNumberOptions(groups: List<Group>) {
+        for (group in groups) {
+            groupNumberOptions.add(group.name)
+        }
+        groupNumberOptions.toList()
+    }
+    fun search(text: String): List<String> {
+        return groupNumberOptions.filter {
+            it.startsWith(text)
+        }
+    }
     fun createListOfSubjects() {
         var isSubjectInThisWeek: Boolean
         for (schedulesItem in currentWeekSchedule!!.monday!!) {
             isSubjectInThisWeek = false
             for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (DataSource.currentWeek == weekNumber) {
+                if (currentWeek == weekNumber) {
                     isSubjectInThisWeek = true
                     break
                 }
@@ -24,7 +41,7 @@ object ScheduleHolder {
         for (schedulesItem in currentWeekSchedule!!.tuesday!!) {
             isSubjectInThisWeek = false
             for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (DataSource.currentWeek == weekNumber) {
+                if (currentWeek == weekNumber) {
                     isSubjectInThisWeek = true
                     break
                 }
@@ -36,7 +53,7 @@ object ScheduleHolder {
         for (schedulesItem in currentWeekSchedule!!.wednesday!!) {
             isSubjectInThisWeek = false
             for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (DataSource.currentWeek == weekNumber) {
+                if (currentWeek == weekNumber) {
                     isSubjectInThisWeek = true
                     break
                 }
@@ -48,7 +65,7 @@ object ScheduleHolder {
         for (schedulesItem in currentWeekSchedule!!.thursday!!) {
             isSubjectInThisWeek = false
             for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (DataSource.currentWeek == weekNumber) {
+                if (currentWeek == weekNumber) {
                     isSubjectInThisWeek = true
                     break
                 }
@@ -60,7 +77,7 @@ object ScheduleHolder {
         for (schedulesItem in currentWeekSchedule!!.friday!!) {
             isSubjectInThisWeek = false
             for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (DataSource.currentWeek == weekNumber) {
+                if (currentWeek == weekNumber) {
                     isSubjectInThisWeek = true
                     break
                 }
@@ -72,7 +89,7 @@ object ScheduleHolder {
         for (schedulesItem in currentWeekSchedule!!.saturday!!) {
             isSubjectInThisWeek = false
             for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (DataSource.currentWeek == weekNumber) {
+                if (currentWeek == weekNumber) {
                     isSubjectInThisWeek = true
                     break
                 }
@@ -82,6 +99,6 @@ object ScheduleHolder {
             }
         }
         uniqueSubjects = listOfSubjects.toList()
-        uniqueSubjects = ScheduleHolder.listOfSubjects.distinct()
+        uniqueSubjects = listOfSubjects.distinct()
     }
 }

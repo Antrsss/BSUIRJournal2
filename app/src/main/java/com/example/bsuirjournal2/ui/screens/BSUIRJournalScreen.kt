@@ -1,7 +1,6 @@
 package com.example.bsuirjournal2.ui.screens
 
-import android.content.Context
-import android.util.Log
+import android.content.SharedPreferences
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -25,11 +24,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bsuirjournal2.R
-import com.example.bsuirjournal2.data.DataSource
+import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.ui.JournalViewModel
-import java.io.File
-import java.io.FileOutputStream
-import java.io.FileWriter
 
 
 enum class BSUIRJournalScreen() {
@@ -66,8 +62,10 @@ fun BSUIRJournalAppBar(
 @Composable
 fun BSUIRJournalApp (
     viewModel: JournalViewModel = viewModel(),
+    sharedPreferences: SharedPreferences,
     navController: NavHostController = rememberNavController()
 ) {
+
     Scaffold(
         topBar = {
             BSUIRJournalAppBar(
@@ -77,7 +75,7 @@ fun BSUIRJournalApp (
         }
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
-
+        val editor = sharedPreferences.edit()
         NavHost(
             navController = navController,
             startDestination = BSUIRJournalScreen.Start.name,
@@ -86,10 +84,14 @@ fun BSUIRJournalApp (
             composable(route = BSUIRJournalScreen.Start.name) {
                 val groupsViewModel: GroupsViewModel =
                     viewModel(factory = GroupsViewModel.Factory)
+
+
                 HomeScreen(
                     viewModel = viewModel,
                     navController = navController,
                     groupsUiState = groupsViewModel.groupsUiState,
+                    sharedPreferences = sharedPreferences,
+                    editor = editor,
                     retryAction = { groupsViewModel::getGroupNumbers },
                 )
             }
@@ -100,7 +102,7 @@ fun BSUIRJournalApp (
                 MainScreen(
                     viewModel = viewModel,
                     scheduleUiState = scheduleViewModel.scheduleUiState,
-                    selectedGroup = DataSource.currentGroup,
+                    selectedGroup = GroupApiHolder.currentGroup,
                     retryAction = {},
                     modifier =  Modifier
                 )

@@ -36,5 +36,5 @@ interface GroupsApiService {
     suspend fun getCurrentWeek(): Int
     @GET("schedule")
     /** Получение расписания группы **/
-    suspend fun getGroupSchedule(@Query("studentGroup") groupNumber: String): Schedule
+    suspend fun getGroupSchedule(@Query("studentGroup") groupNumber: String?): Schedule
 }

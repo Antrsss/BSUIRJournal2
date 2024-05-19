@@ -15,59 +15,84 @@
  */
 package com.example.bsuirjournal2.ui.screens
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
-import com.example.bsuirjournal2.data.DataSource
+import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.ui.JournalViewModel
-import java.io.File
 
 @Composable
 fun HomeScreen(
     viewModel: JournalViewModel,
     navController: NavHostController,
     groupsUiState: GroupsUiState,
+    sharedPreferences: SharedPreferences,
+    editor: SharedPreferences.Editor,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (groupsUiState) {
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is GroupsUiState.Success -> {
-            DataSource.currentWeek = groupsUiState.currentWeek
-            DataSource.groupNumberOptions.clear()
-            DataSource.createGroupNumberOptions(groupsUiState.groups)
+            GroupApiHolder.currentWeek = groupsUiState.currentWeek
+            GroupApiHolder.groupNumberOptions.clear()
+            GroupApiHolder.createGroupNumberOptions(groupsUiState.groups)
 
-            val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
-            GroupListScreen(
-                groupNumberOptions = remember {
-                    mutableStateOf(DataSource.groupNumberOptions)
-                },
-                onGroupCardClicked = {
-                    viewModel.setGroup(it)
-                    DataSource.currentGroup = it
-                    callChooseNumSubgroupDialog.value = true
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-            )
-            if (callChooseNumSubgroupDialog.value == true) {
-                ChooseNumSubgroupDialog(navController = navController, onDismissRequest = callChooseNumSubgroupDialog)
+            GroupApiHolder.currentGroup = sharedPreferences.getString("selectedGroup", null)
+            GroupApiHolder.currentSubgroup = sharedPreferences.getInt("subgroup", 0)
+
+            if (GroupApiHolder.currentGroup == null) {
+                val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
+                GroupListScreen(
+                    groupNumberOptions = remember {
+                        mutableStateOf(GroupApiHolder.groupNumberOptions)
+                    },
+                    onGroupCardClicked = {
+                        viewModel.setGroup(it)
+                        GroupApiHolder.currentGroup = it
+                        editor.apply{
+                            putString("selectedGroup", it)
+                            apply()
+                        }
+                        callChooseNumSubgroupDialog.value = true
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+                if (callChooseNumSubgroupDialog.value == true) {
+                    ChooseNumSubgroupDialog(navController = navController, editor = editor, onDismissRequest = callChooseNumSubgroupDialog)
+                }
+            }
+            else {
+                navController.navigate(BSUIRJournalScreen.Main.name)
             }
         }
         is GroupsUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
@@ -102,6 +127,71 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
         Text(text = stringResource(R.string.loading_failed), modifier = Modifier.padding(16.dp))
         Button(onClick = retryAction) {
             Text(stringResource(R.string.retry))
+        }
+    }
+}
+
+@Composable
+fun ChooseNumSubgroupDialog(
+    navController: NavHostController,
+    editor: SharedPreferences.Editor,
+    onDismissRequest: MutableState<Boolean>
+) {
+    Dialog(
+        onDismissRequest = { onDismissRequest.value = false }
+    ) {
+        Card(
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column (
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = "Выберите подгруппу:",
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            GroupApiHolder.currentSubgroup = 1
+                            editor.apply{
+                                putInt("subgroup", 1)
+                                apply()
+                            }
+                            navController.navigate(BSUIRJournalScreen.Main.name)
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.size(width = 80.dp, height = 60.dp)
+                    ) {
+                        Text(text = "1")
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    OutlinedButton(
+                        onClick = {
+                            GroupApiHolder.currentSubgroup = 2
+                            editor.apply{
+                                putInt("subgroup", 2)
+                                apply()
+                            }
+                            navController.navigate(BSUIRJournalScreen.Main.name)
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.size(width = 80.dp, height = 60.dp)
+                    ) {
+                        Text(text = "2")
+                    }
+                }
+            }
         }
     }
 }

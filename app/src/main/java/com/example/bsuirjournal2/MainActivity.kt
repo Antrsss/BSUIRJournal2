@@ -1,5 +1,6 @@
 package com.example.bsuirjournal2
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,9 @@ import com.example.bsuirjournal2.ui.theme.BSUIRJournal2Theme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val sharedPreferences = getSharedPreferences("localData", Context.MODE_PRIVATE)
+
         setContent {
             BSUIRJournal2Theme {
                 // A surface container using the 'background' color from the theme
@@ -24,7 +28,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    BSUIRJournalApp()
+                    BSUIRJournalApp(sharedPreferences = sharedPreferences)
                 }
             }
         }

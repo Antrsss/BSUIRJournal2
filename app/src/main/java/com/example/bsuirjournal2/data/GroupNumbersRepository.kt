@@ -11,7 +11,7 @@ interface GroupNumbersRepository {
     /** Fetches list of MarsPhoto from marsApi */
     suspend fun getGroupNumbers(): List<Group>
     suspend fun getCurrentWeek(): Int
-    suspend fun getGroupSchedule(groupNumber: String): Schedule
+    suspend fun getGroupSchedule(groupNumber: String?): Schedule
 }
 
 /**
@@ -24,5 +24,5 @@ class NetworkGroupNumbersRepository(
 ) : GroupNumbersRepository {
     override suspend fun getGroupNumbers(): List<Group> = groupsApiService.getGroups()
     override suspend fun getCurrentWeek(): Int = groupsApiService.getCurrentWeek()
-    override suspend fun getGroupSchedule(groupNumber: String): Schedule = groupsApiService.getGroupSchedule(groupNumber)
+    override suspend fun getGroupSchedule(groupNumber: String?): Schedule = groupsApiService.getGroupSchedule(groupNumber)
 }
