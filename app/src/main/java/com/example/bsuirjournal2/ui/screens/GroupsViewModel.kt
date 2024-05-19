@@ -72,7 +72,7 @@ class GroupsViewModel(
      */
     fun getGroupNumbers() {
         viewModelScope.launch {
-            val user: User = User(id = 2, username = "kotlin", password = "kotlin")
+            /*val user: User = User(id = 2, username = "kotlin", password = "kotlin")
             authorisationRepository.registerUser(user).enqueue(object : Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                     Log.wtf("registration", "failed to register")
@@ -85,6 +85,7 @@ class GroupsViewModel(
                     Log.d("registration", "registered successfully")
                 }
             })
+             */
             groupsUiState = GroupsUiState.Loading
             groupsUiState = try {
                 GroupsUiState.Success(
@@ -96,7 +97,7 @@ class GroupsViewModel(
             } catch (e: HttpException) {
                 GroupsUiState.Error
             }
-            var token: String = "Bearer "
+            /*var token: String = "Bearer "
             authorisationRepository.authoriseUser(user)
                 .enqueue(object : Callback<AuthorisationResponse> {
                     override fun onResponse(
@@ -111,7 +112,6 @@ class GroupsViewModel(
                         Log.wtf("auth", "fuck")
                     }
                 })
-            /*
             val mynote: Note = Note(100, "user2", "from kocklin new")
             notesRepository.postANote(token, mynote).enqueue(object : Callback<Note> {
                 override fun onResponse(call: Call<Note>, response: Response<Note>) {
