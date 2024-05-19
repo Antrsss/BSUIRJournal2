@@ -15,7 +15,9 @@
  */
 package com.example.bsuirjournal2.data
 
+import com.example.bsuirjournal2.network.AuthorisationApiService
 import com.example.bsuirjournal2.network.GroupsApiService
+import com.example.bsuirjournal2.network.NotesApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -24,6 +26,8 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 interface AppContainer {
     val groupNumbersRepository: GroupNumbersRepository
+    val notesRepository: NotesRepository
+    val authorisationRepository: AuthorisationRepository
 }
 
 /**
@@ -34,12 +38,18 @@ interface AppContainer {
 class DefaultAppContainer : AppContainer {
     private val baseUrl =
         "https://iis.bsuir.by/api/v1/"
+    private val baseUrl2 = "http://10.0.2.2:8080/"
+
     /**
      * Use the Retrofit builder to build a retrofit object using a kotlinx.serialization converter
      */
     private val retrofit: Retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(baseUrl)
+        .build()
+    private val retrofit2: Retrofit = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl(baseUrl2)
         .build()
 
     /**
@@ -48,11 +58,24 @@ class DefaultAppContainer : AppContainer {
     private val retrofitService: GroupsApiService by lazy {
         retrofit.create(GroupsApiService::class.java)
     }
+    private val retrofitNoteService: NotesApiService by lazy {
+        retrofit2.create(NotesApiService::class.java)
+    }
+
+    private val retrofitAuthorisationService: AuthorisationApiService by lazy {
+        retrofit2.create(AuthorisationApiService::class.java)
+    }
 
     /**
      * DI implementation for Mars photos repository
      */
     override val groupNumbersRepository: GroupNumbersRepository by lazy {
         NetworkGroupNumbersRepository(retrofitService)
+    }
+    override val notesRepository: NotesRepository by lazy {
+        NetworkNotesRepository(retrofitNoteService)
+    }
+    override val authorisationRepository: AuthorisationRepository by lazy {
+        NetworkAuthorisationRepository(retrofitAuthorisationService)
     }
 }
