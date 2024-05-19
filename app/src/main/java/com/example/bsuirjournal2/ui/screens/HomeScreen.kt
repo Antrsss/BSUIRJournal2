@@ -19,18 +19,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -43,9 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.DataSource
-import com.example.bsuirjournal2.data.UiState
-import com.example.bsuirjournal2.model.Group
 import com.example.bsuirjournal2.ui.JournalViewModel
+import java.io.File
 
 @Composable
 fun HomeScreen(
@@ -54,7 +45,6 @@ fun HomeScreen(
     groupsUiState: GroupsUiState,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     when (groupsUiState) {
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
@@ -62,18 +52,23 @@ fun HomeScreen(
             DataSource.currentWeek = groupsUiState.currentWeek
             DataSource.groupNumberOptions.clear()
             DataSource.createGroupNumberOptions(groupsUiState.groups)
-            SelectGroupScreen(
+
+            val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
+            GroupListScreen(
                 groupNumberOptions = remember {
                     mutableStateOf(DataSource.groupNumberOptions)
                 },
                 onGroupCardClicked = {
                     viewModel.setGroup(it)
                     DataSource.currentGroup = it
-                    navController.navigate(BSUIRJournalScreen.Main.name)
+                    callChooseNumSubgroupDialog.value = true
                 },
                 modifier = Modifier
                     .fillMaxSize()
             )
+            if (callChooseNumSubgroupDialog.value == true) {
+                ChooseNumSubgroupDialog(navController = navController, onDismissRequest = callChooseNumSubgroupDialog)
+            }
         }
         is GroupsUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
     }

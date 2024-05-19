@@ -42,20 +42,13 @@ data class Schedule(
         val saturday: List<SchedulesItem>?,
     ) {
         data class SchedulesItem(
-            val auditories: List<String>?,
-            val endLessonTime: String,
             val lessonTypeAbbrev: String?,
-            val note: String?,
             val numSubgroup: Int,
-            val startLessonTime: String,
             val subject: String?,
-            val subjectFullName: String?,
             val weekNumber: List<Int>?,
             val dateLesson: String?,
             val startLessonDate: String?,
             val endLessonDate: String?,
-            val announcement: Boolean,
-            val split: Boolean
         )
     }
 }
