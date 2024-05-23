@@ -1,4 +1,4 @@
-package com.example.bsuirjournal2.ui.screens
+package com.example.bsuirjournal2.viewmodels
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -31,9 +31,9 @@ class ScheduleViewModel(
     var scheduleUiState: ScheduleUiState by mutableStateOf(ScheduleUiState.Loading)
         private set
     init {
-        getGroupSchedule(groupNumber = groupNumber)
+        getGroupSchedule()
     }
-    fun getGroupSchedule(groupNumber: String?) {
+    fun getGroupSchedule() {
         viewModelScope.launch {
             scheduleUiState = ScheduleUiState.Loading
             try {

@@ -1,6 +1,7 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,8 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -24,13 +23,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bsuirjournal2.R
-import com.example.bsuirjournal2.data.GroupApiHolder
-import com.example.bsuirjournal2.ui.JournalViewModel
+import com.example.bsuirjournal2.roomdatabase.State
+import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
+import com.example.bsuirjournal2.viewmodels.GroupsViewModel
+import com.example.bsuirjournal2.viewmodels.ScheduleViewModel
 
 
 enum class BSUIRJournalScreen() {
-    Start,
-    Main,
+    Authorisation,
+    GroupList,
+    Schedule,
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,11 +63,11 @@ fun BSUIRJournalAppBar(
 
 @Composable
 fun BSUIRJournalApp (
-    viewModel: JournalViewModel = viewModel(),
     sharedPreferences: SharedPreferences,
+    state: State,
+    onEvent: (SubjectStateEvent) -> Unit,
     navController: NavHostController = rememberNavController()
 ) {
-
     Scaffold(
         topBar = {
             BSUIRJournalAppBar(
@@ -74,37 +76,51 @@ fun BSUIRJournalApp (
             )
         }
     ) { innerPadding ->
-        val uiState by viewModel.uiState.collectAsState()
+
         val editor = sharedPreferences.edit()
+
         NavHost(
             navController = navController,
-            startDestination = BSUIRJournalScreen.Start.name,
+            startDestination = BSUIRJournalScreen.Authorisation.name,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(route = BSUIRJournalScreen.Start.name) {
+            composable(route = BSUIRJournalScreen.Authorisation.name) {
                 val groupsViewModel: GroupsViewModel =
                     viewModel(factory = GroupsViewModel.Factory)
 
+                AuthorisationScreen(
+                    groupsViewModel = groupsViewModel,
+                    navController = navController,
+                    sharedPreferences = sharedPreferences,
+                    editor = editor,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            composable(route = BSUIRJournalScreen.GroupList.name) {
+                val groupsViewModel: GroupsViewModel =
+                    viewModel(factory = GroupsViewModel.Factory)
 
                 HomeScreen(
-                    viewModel = viewModel,
                     navController = navController,
                     groupsUiState = groupsViewModel.groupsUiState,
                     sharedPreferences = sharedPreferences,
-                    editor = editor,
                     retryAction = { groupsViewModel::getGroupNumbers },
                 )
             }
-            composable(route = BSUIRJournalScreen.Main.name) {
+            composable(route = BSUIRJournalScreen.Schedule.name) {
                 val scheduleViewModel: ScheduleViewModel =
                     viewModel(factory = ScheduleViewModel.Factory)
+
+                val currentGroup = sharedPreferences.getString("selectedGroup", "")
+
                 val context = LocalContext.current
                 MainScreen(
-                    viewModel = viewModel,
                     scheduleUiState = scheduleViewModel.scheduleUiState,
-                    selectedGroup = GroupApiHolder.currentGroup,
-                    retryAction = {},
-                    modifier =  Modifier
+                    retryAction = { scheduleViewModel::getGroupSchedule },
+                    state = state,
+                    onEvent = onEvent ,
+                    sharedPreferences = sharedPreferences,
+                    modifier = Modifier
                 )
             }
         }

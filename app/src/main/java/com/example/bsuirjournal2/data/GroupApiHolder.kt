@@ -1,5 +1,6 @@
 package com.example.bsuirjournal2.data
 
+import android.util.Log
 import com.example.bsuirjournal2.model.Group
 import com.example.bsuirjournal2.model.Schedule
 
@@ -28,10 +29,12 @@ object GroupApiHolder {
         var isSubjectInThisWeek: Boolean
         for (schedulesItem in currentWeekSchedule!!.monday!!) {
             isSubjectInThisWeek = false
-            for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (currentWeek == weekNumber) {
-                    isSubjectInThisWeek = true
-                    break
+            schedulesItem?.weekNumber?.let {
+                for (weekNumber in it) {
+                    if (currentWeek == weekNumber) {
+                        isSubjectInThisWeek = true
+                        break
+                    }
                 }
             }
             if (isSubjectInThisWeek == true && (schedulesItem.numSubgroup == currentSubgroup || schedulesItem.numSubgroup == 0)) {
@@ -40,10 +43,12 @@ object GroupApiHolder {
         }
         for (schedulesItem in currentWeekSchedule!!.tuesday!!) {
             isSubjectInThisWeek = false
-            for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (currentWeek == weekNumber) {
-                    isSubjectInThisWeek = true
-                    break
+            schedulesItem?.weekNumber?.let {
+                for (weekNumber in it) {
+                    if (currentWeek == weekNumber) {
+                        isSubjectInThisWeek = true
+                        break
+                    }
                 }
             }
             if (isSubjectInThisWeek == true && (schedulesItem.numSubgroup == currentSubgroup || schedulesItem.numSubgroup == 0)) {
@@ -52,10 +57,12 @@ object GroupApiHolder {
         }
         for (schedulesItem in currentWeekSchedule!!.wednesday!!) {
             isSubjectInThisWeek = false
-            for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (currentWeek == weekNumber) {
-                    isSubjectInThisWeek = true
-                    break
+            schedulesItem?.weekNumber?.let {
+                for (weekNumber in it) {
+                    if (currentWeek == weekNumber) {
+                        isSubjectInThisWeek = true
+                        break
+                    }
                 }
             }
             if (isSubjectInThisWeek == true && (schedulesItem.numSubgroup == currentSubgroup || schedulesItem.numSubgroup == 0)) {
@@ -64,10 +71,12 @@ object GroupApiHolder {
         }
         for (schedulesItem in currentWeekSchedule!!.thursday!!) {
             isSubjectInThisWeek = false
-            for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (currentWeek == weekNumber) {
-                    isSubjectInThisWeek = true
-                    break
+            schedulesItem?.weekNumber?.let {
+                for (weekNumber in it) {
+                    if (currentWeek == weekNumber) {
+                        isSubjectInThisWeek = true
+                        break
+                    }
                 }
             }
             if (isSubjectInThisWeek == true && (schedulesItem.numSubgroup == currentSubgroup || schedulesItem.numSubgroup == 0)) {
@@ -76,10 +85,12 @@ object GroupApiHolder {
         }
         for (schedulesItem in currentWeekSchedule!!.friday!!) {
             isSubjectInThisWeek = false
-            for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (currentWeek == weekNumber) {
-                    isSubjectInThisWeek = true
-                    break
+            schedulesItem?.weekNumber?.let {
+                for (weekNumber in it) {
+                    if (currentWeek == weekNumber) {
+                        isSubjectInThisWeek = true
+                        break
+                    }
                 }
             }
             if (isSubjectInThisWeek == true && (schedulesItem.numSubgroup == currentSubgroup || schedulesItem.numSubgroup == 0)) {
@@ -88,10 +99,12 @@ object GroupApiHolder {
         }
         for (schedulesItem in currentWeekSchedule!!.saturday!!) {
             isSubjectInThisWeek = false
-            for (weekNumber in schedulesItem!!.weekNumber!!) {
-                if (currentWeek == weekNumber) {
-                    isSubjectInThisWeek = true
-                    break
+            schedulesItem?.weekNumber?.let {
+                for (weekNumber in it) {
+                    if (currentWeek == weekNumber) {
+                        isSubjectInThisWeek = true
+                        break
+                    }
                 }
             }
             if (isSubjectInThisWeek == true && (schedulesItem.numSubgroup == currentSubgroup || schedulesItem.numSubgroup == 0)) {

@@ -1,5 +1,6 @@
 package com.example.bsuirjournal2.ui.screens
 
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -22,10 +23,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -36,38 +35,54 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
-import com.example.bsuirjournal2.ui.JournalViewModel
+import com.example.bsuirjournal2.roomdatabase.State
+import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
+import com.example.bsuirjournal2.viewmodels.ScheduleUiState
 
 @Composable
 fun MainScreen(
-    viewModel: JournalViewModel,
+    state: State,
+    onEvent: (SubjectStateEvent) -> Unit,
+    sharedPreferences: SharedPreferences,
     scheduleUiState: ScheduleUiState,
-    selectedGroup: String?,
     retryAction: () -> Unit,
     modifier: Modifier
 ) {
+    Log.d("MyUi", "MainScreen!")
     when (scheduleUiState) {
         is ScheduleUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is ScheduleUiState.Success -> {
+
             GroupApiHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
-            Log.d("ScheduleScreen", "Current week schedule: ${GroupApiHolder.currentWeekSchedule}")
             GroupApiHolder.createListOfSubjects()
-            Log.d("ScheduleScreen", "${GroupApiHolder.listOfSubjects}")
+
+            Log.d("MyUi", "Schedule screen achieved")
+            Log.d("database", "${state.subjectsStates.size} < ${GroupApiHolder.uniqueSubjects.size}")
+
+            if (state.subjectsStates.size < GroupApiHolder.uniqueSubjects.size) {
+                onEvent(SubjectStateEvent.SaveSubjectState)
+            }
+
+            Log.d("database", "New ${state.subjectsStates.size} < ${GroupApiHolder.uniqueSubjects.size}")
+
             ScheduleScreen(
+                state = state,
+                onEvent = onEvent,
                 listOfSubjects = GroupApiHolder.uniqueSubjects,
                 currentWeek = GroupApiHolder.currentWeek,
-                modifier = Modifier
             )
         }
         is ScheduleUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
     }
 }
 
+
 @Composable
 fun ScheduleScreen(
+    state: State,
+    onEvent: (SubjectStateEvent) -> Unit,
     listOfSubjects: List<String?>,
     currentWeek: Int?,
-    modifier: Modifier
 ) {
     Column(
         modifier = Modifier
@@ -77,7 +92,7 @@ fun ScheduleScreen(
         Text(
             text = "Неделя $currentWeek",
             fontSize = 20.sp
-            )
+        )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
@@ -116,58 +131,68 @@ fun ScheduleScreen(
             horizontalAlignment = Alignment.Start,
             modifier = Modifier.padding(vertical = 4.dp)
         ) {
-            items(listOfSubjects) { item ->
+            items(state.subjectsStates) { item ->
                 item!!.let {
+                    Log.d("MyUi", "Item Success!")
                     Row(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        var checkedNumber = remember { mutableStateOf(7) }
-                        val paintersListState = remember {
-                            mutableStateListOf(
-                                "clearPainter",
-                                "clearPainter",
-                                "clearPainter",
-                                "clearPainter",
-                                "clearPainter",
-                                "clearPainter",
-                                "clearPainter",
-                            )
-                        }
                         val clearPainter = painterResource(id = R.drawable.task_free)
                         val donePainter = painterResource(id = R.drawable.task_done)
                         val arrowPainter = painterResource(id = R.drawable.task_arrow)
                         val cancelPainter = painterResource(id = R.drawable.task_cancel)
 
-                        val paintersList: MutableList<Painter> = mutableListOf()
+                        val rollNo = state.subjectsStates.indexOf(it)
+                        val currentSubject = listOfSubjects[rollNo]
+                        Log.d("MyUi", "CurrentSubject ${state.subjectsStates.indexOf(it)}")
+                        val subjectState = item
 
-                        for (painterType in paintersListState) {
-                            if (painterType == "donePainter") {
-                                paintersList.add(donePainter)
+                        val subjectPaintersState = mutableListOf(
+                            subjectState.monday,
+                            subjectState.tuesday,
+                            subjectState.wednesday,
+                            subjectState.thursday,
+                            subjectState.friday,
+                            subjectState.saturday,
+                            subjectState.sunday
+                        )
+
+                        Log.d("MyUi", "States Success")
+
+                        var checkedDay = remember {
+                            mutableStateOf(Pair(rollNo, 7))
+                        }
+
+                        val subjectPaintersList: MutableList<Painter> = mutableListOf()
+
+                        for (painterState in subjectPaintersState) {
+                            if (painterState == "donePainter") {
+                                subjectPaintersList.add(donePainter)
                             }
-                            else if (painterType == "arrowPainter") {
-                                paintersList.add(arrowPainter)
+                            else if (painterState == "arrowPainter") {
+                                subjectPaintersList.add(arrowPainter)
                             }
-                            else if (painterType == "cancelPainter") {
-                                paintersList.add(cancelPainter)
+                            else if (painterState == "cancelPainter") {
+                                subjectPaintersList.add(cancelPainter)
                             }
-                            else if (painterType == "clearPainter") {
-                                paintersList.add(clearPainter)
+                            else if (painterState == "clearPainter") {
+                                subjectPaintersList.add(clearPainter)
                             }
                         }
 
-                        CheckInRow (painters = paintersList, checkedNumber = checkedNumber)
+                        SquaresRow (painters = subjectPaintersList, checkedDay = checkedDay)
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = item,
+                            text = currentSubject.toString(),
                             modifier = Modifier
                                 .height(40.dp)
                                 .wrapContentHeight(Alignment.CenterVertically)
                         )
-                        if (checkedNumber.value != 7) {
-                            ChooseCheckInActionDialog(
-                                onDismissRequest = {checkedNumber.value = 7},
-                                paintersState = paintersListState,
-                                checkedNumber = checkedNumber
+                        if (checkedDay.value.second != 7) {
+                            ChooseCheckSquareDialog(
+                                onDismissRequest = { checkedDay.value = Pair(checkedDay.value.first, 7) },
+                                onEvent = onEvent,
+                                checkedDay = checkedDay
                             )
                         }
                     }
@@ -177,10 +202,13 @@ fun ScheduleScreen(
     }
 }
 
+
+
+
 @Composable
-fun CheckInRow(
+fun SquaresRow(
     painters: MutableList<Painter>,
-    checkedNumber: MutableState<Int>
+    checkedDay: MutableState<Pair<Int, Int>>,
 ) {
     val description = null
     Row() {
@@ -189,58 +217,60 @@ fun CheckInRow(
             contentDescription = description,
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .clickable { checkedNumber.value = 0 }
+                .clickable {
+                    checkedDay.value = Pair(checkedDay.value.first, 0)
+                }
         )
         Image(
             painter = painters[1],
             contentDescription = description,
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .clickable { checkedNumber.value = 1 }
+                .clickable { checkedDay.value = Pair(checkedDay.value.first, 1) }
         )
         Image(
             painter = painters[2],
             contentDescription = description,
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .clickable { checkedNumber.value = 2 }
+                .clickable { checkedDay.value = Pair(checkedDay.value.first, 2) }
         )
         Image(
             painter = painters[3],
             contentDescription = description,
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .clickable { checkedNumber.value = 3 }
+                .clickable { checkedDay.value = Pair(checkedDay.value.first, 3) }
         )
         Image(
             painter = painters[4],
             contentDescription = description,
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .clickable { checkedNumber.value = 4 }
+                .clickable { checkedDay.value = Pair(checkedDay.value.first, 4) }
         )
         Image(
             painter = painters[5],
             contentDescription = description,
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .clickable { checkedNumber.value = 5 }
+                .clickable { checkedDay.value = Pair(checkedDay.value.first, 5) }
         )
         Image(
             painter = painters[6],
             contentDescription = description,
             modifier = Modifier
                 .size(40.dp, 40.dp)
-                .clickable { checkedNumber.value = 6 }
+                .clickable { checkedDay.value = Pair(checkedDay.value.first, 6) }
         )
     }
 }
 
 @Composable
-fun ChooseCheckInActionDialog(
+fun ChooseCheckSquareDialog(
     onDismissRequest: () -> Unit,
-    paintersState: SnapshotStateList<String>,
-    checkedNumber: MutableState<Int>
+    onEvent: (SubjectStateEvent) -> Unit,
+    checkedDay: MutableState<Pair<Int, Int>>
 ) {
     val clearPainter = painterResource(id = R.drawable.task_free)
     val donePainter = painterResource(id = R.drawable.task_done)
@@ -276,8 +306,8 @@ fun ChooseCheckInActionDialog(
                 ) {
                     Row(
                         modifier = Modifier.clickable {
-                            paintersState[checkedNumber.value] = "donePainter"
-                            checkedNumber.value = 7
+                            updateDayState(checkedDay, "donePainter", onEvent)
+                            checkedDay.value = Pair(checkedDay.value.first, 7)
                         }
                     ){
                         Image(
@@ -296,8 +326,8 @@ fun ChooseCheckInActionDialog(
                     }
                     Row(
                         modifier = Modifier.clickable {
-                            paintersState[checkedNumber.value] = "arrowPainter"
-                            checkedNumber.value = 7
+                            updateDayState(checkedDay, "arrowPainter", onEvent)
+                            checkedDay.value = Pair(checkedDay.value.first, 7)
                         }
                     ){
                         Image(
@@ -316,8 +346,8 @@ fun ChooseCheckInActionDialog(
                     }
                     Row(
                         modifier = Modifier.clickable {
-                            paintersState[checkedNumber.value] = "cancelPainter"
-                            checkedNumber.value = 7
+                            updateDayState(checkedDay, "cancelPainter", onEvent)
+                            checkedDay.value = Pair(checkedDay.value.first, 7)
                         }
                     ){
                         Image(
@@ -336,8 +366,8 @@ fun ChooseCheckInActionDialog(
                     }
                     Row(
                         modifier = Modifier.clickable {
-                            paintersState[checkedNumber.value] = "clearPainter"
-                            checkedNumber.value = 7
+                            updateDayState(checkedDay, "clearPainter", onEvent)
+                            checkedDay.value = Pair(checkedDay.value.first, 7)
                         }
                     ){
                         Image(
@@ -360,4 +390,27 @@ fun ChooseCheckInActionDialog(
     }
 }
 
+fun updateDayState(checkedDay: MutableState<Pair<Int, Int>>, painterState: String, onEvent: (SubjectStateEvent) -> Unit) {
+    if (checkedDay.value.second == 0) {
+        onEvent(SubjectStateEvent.UpdateMonday(painterState, checkedDay.value.first))
+    }
+    else if (checkedDay.value.second == 1) {
+        onEvent(SubjectStateEvent.UpdateTuesday(painterState, checkedDay.value.first))
+    }
+    else if (checkedDay.value.second == 2) {
+        onEvent(SubjectStateEvent.UpdateWednesday(painterState, checkedDay.value.first))
+    }
+    else if (checkedDay.value.second == 3) {
+        onEvent(SubjectStateEvent.UpdateThursday(painterState, checkedDay.value.first))
+    }
+    else if (checkedDay.value.second == 4) {
+        onEvent(SubjectStateEvent.UpdateFriday(painterState, checkedDay.value.first))
+    }
+    else if (checkedDay.value.second == 5) {
+        onEvent(SubjectStateEvent.UpdateSaturday(painterState, checkedDay.value.first))
+    }
+    else if (checkedDay.value.second == 6) {
+        onEvent(SubjectStateEvent.UpdateSunday(painterState, checkedDay.value.first))
+    }
+}
 

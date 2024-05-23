@@ -16,6 +16,7 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,37 +48,49 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
-import com.example.bsuirjournal2.ui.JournalViewModel
+import com.example.bsuirjournal2.viewmodels.GroupsUiState
 
 @Composable
 fun HomeScreen(
-    viewModel: JournalViewModel,
     navController: NavHostController,
     groupsUiState: GroupsUiState,
     sharedPreferences: SharedPreferences,
-    editor: SharedPreferences.Editor,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    Log.d("MyUi", "HomeScreen")
     when (groupsUiState) {
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is GroupsUiState.Success -> {
+
+            val editor = sharedPreferences.edit()
+            var lastWeek = sharedPreferences.getInt("lastWeek", 0)
+
+            if (groupsUiState.currentWeek != lastWeek) {
+                editor.putInt("lastWeek", groupsUiState.currentWeek)
+                //delete data from database
+            }
+
             GroupApiHolder.currentWeek = groupsUiState.currentWeek
+
+            val currentGroup = sharedPreferences.getString("selectedGroup", null)
+            GroupApiHolder.currentGroup = currentGroup
+            val currentSubgroup = sharedPreferences.getInt("subgroup", 0)
+            GroupApiHolder.currentSubgroup = currentSubgroup
+
+            Log.d("ApiHolder", "${groupsUiState.currentWeek}+ ${GroupApiHolder.currentWeek} + ${GroupApiHolder.currentGroup} + ${GroupApiHolder.currentSubgroup}")
             GroupApiHolder.groupNumberOptions.clear()
             GroupApiHolder.createGroupNumberOptions(groupsUiState.groups)
 
-            GroupApiHolder.currentGroup = sharedPreferences.getString("selectedGroup", null)
-            GroupApiHolder.currentSubgroup = sharedPreferences.getInt("subgroup", 0)
+            if (currentGroup == null) {
 
-            if (GroupApiHolder.currentGroup == null) {
                 val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
+
                 GroupListScreen(
                     groupNumberOptions = remember {
                         mutableStateOf(GroupApiHolder.groupNumberOptions)
                     },
                     onGroupCardClicked = {
-                        viewModel.setGroup(it)
-                        GroupApiHolder.currentGroup = it
                         editor.apply{
                             putString("selectedGroup", it)
                             apply()
@@ -88,14 +101,18 @@ fun HomeScreen(
                         .fillMaxSize()
                 )
                 if (callChooseNumSubgroupDialog.value == true) {
-                    ChooseNumSubgroupDialog(navController = navController, editor = editor, onDismissRequest = callChooseNumSubgroupDialog)
+                    ChooseNumSubgroupDialog(
+                        navController = navController,
+                        editor = editor,
+                        onDismissRequest = callChooseNumSubgroupDialog
+                    )
                 }
             }
             else {
-                navController.navigate(BSUIRJournalScreen.Main.name)
+                navController.navigate(BSUIRJournalScreen.Schedule.name)
             }
         }
-        is GroupsUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
+        is GroupsUiState.Error -> ErrorScreen(retryAction = retryAction, modifier = modifier.fillMaxSize())
     }
 }
 
@@ -168,7 +185,7 @@ fun ChooseNumSubgroupDialog(
                                 putInt("subgroup", 1)
                                 apply()
                             }
-                            navController.navigate(BSUIRJournalScreen.Main.name)
+                            navController.navigate(BSUIRJournalScreen.Schedule.name)
                         },
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.size(width = 80.dp, height = 60.dp)
@@ -183,7 +200,7 @@ fun ChooseNumSubgroupDialog(
                                 putInt("subgroup", 2)
                                 apply()
                             }
-                            navController.navigate(BSUIRJournalScreen.Main.name)
+                            navController.navigate(BSUIRJournalScreen.Schedule.name)
                         },
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.size(width = 80.dp, height = 60.dp)
