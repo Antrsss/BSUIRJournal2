@@ -16,6 +16,7 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
+import android.content.SharedPreferences.Editor
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
+import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
 import com.example.bsuirjournal2.viewmodels.GroupsUiState
 
 @Composable
@@ -55,30 +57,31 @@ fun HomeScreen(
     navController: NavHostController,
     groupsUiState: GroupsUiState,
     sharedPreferences: SharedPreferences,
+    editor: SharedPreferences.Editor,
+    onEvent: (SubjectStateEvent) -> Unit,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Log.d("MyUi", "HomeScreen")
+
     when (groupsUiState) {
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is GroupsUiState.Success -> {
 
-            val editor = sharedPreferences.edit()
             var lastWeek = sharedPreferences.getInt("lastWeek", 0)
 
             if (groupsUiState.currentWeek != lastWeek) {
                 editor.putInt("lastWeek", groupsUiState.currentWeek)
-                //delete data from database
+                onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
             }
 
             GroupApiHolder.currentWeek = groupsUiState.currentWeek
 
             val currentGroup = sharedPreferences.getString("selectedGroup", null)
             GroupApiHolder.currentGroup = currentGroup
+
             val currentSubgroup = sharedPreferences.getInt("subgroup", 0)
             GroupApiHolder.currentSubgroup = currentSubgroup
 
-            Log.d("ApiHolder", "${groupsUiState.currentWeek}+ ${GroupApiHolder.currentWeek} + ${GroupApiHolder.currentGroup} + ${GroupApiHolder.currentSubgroup}")
             GroupApiHolder.groupNumberOptions.clear()
             GroupApiHolder.createGroupNumberOptions(groupsUiState.groups)
 
@@ -95,6 +98,7 @@ fun HomeScreen(
                             putString("selectedGroup", it)
                             apply()
                         }
+                        GroupApiHolder.currentGroup = it
                         callChooseNumSubgroupDialog.value = true
                     },
                     modifier = Modifier

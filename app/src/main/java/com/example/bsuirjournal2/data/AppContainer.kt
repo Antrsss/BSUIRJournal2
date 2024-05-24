@@ -40,9 +40,6 @@ class DefaultAppContainer : AppContainer {
         "https://iis.bsuir.by/api/v1/"
     private val baseUrl2 = "http://10.0.2.2:8080/"
 
-    /**
-     * Use the Retrofit builder to build a retrofit object using a kotlinx.serialization converter
-     */
     private val retrofit: Retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(baseUrl)

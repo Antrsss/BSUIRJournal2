@@ -12,7 +12,7 @@ sealed interface SubjectStateEvent {
     object ShowDialog: SubjectStateEvent
     object HideDialog: SubjectStateEvent
     data class DeleteSubjectState(val subjectState: SubjectState): SubjectStateEvent
-    data class DeleteAllSubjectsStates(val subjectState: SubjectState): SubjectStateEvent
+    object DeleteAllSubjectsStates: SubjectStateEvent
     data class UpdateMonday(val monday: String, val roll: Int): SubjectStateEvent
     data class UpdateTuesday(val tuesday: String, val roll: Int): SubjectStateEvent
     data class UpdateWednesday(val wednesday: String, val roll: Int): SubjectStateEvent

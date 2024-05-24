@@ -15,6 +15,7 @@
  */
 package com.example.bsuirjournal2.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,10 +29,16 @@ import com.example.bsuirjournal2.GroupNumbersApplication
 import com.example.bsuirjournal2.data.AuthorisationRepository
 import com.example.bsuirjournal2.data.GroupNumbersRepository
 import com.example.bsuirjournal2.data.NotesRepository
+import com.example.bsuirjournal2.model.AuthorisationResponse
 import com.example.bsuirjournal2.model.Group
 import com.example.bsuirjournal2.model.User
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 
 /**
@@ -55,25 +62,10 @@ class GroupsViewModel(
     var groupsUiState: GroupsUiState by mutableStateOf(GroupsUiState.Loading)
         private set
 
-    /*var authorisationUiState: AuthorisationUiState by mutableStateOf(AuthorisationUiState.Error)
-        private set*/
-    /**
-     * Call getMarsPhotos() on init so we can display status immediately.
-     */
     init {
         getGroupNumbers()
     }
 
-    fun registerUser(user: User) {
-        viewModelScope.launch {
-            authorisationRepository.registerUser(user = user)
-        }
-    }
-    fun authoriseUser(user: User) {
-        viewModelScope.launch {
-            authorisationRepository.authoriseUser(user = user)
-        }
-    }
     fun getGroupNumbers() {
         viewModelScope.launch {
             groupsUiState = GroupsUiState.Loading
@@ -90,9 +82,6 @@ class GroupsViewModel(
         }
     }
 
-    /**
-     * Factory for [GroupsViewModel] that takes [GroupNumbersRepository] as a dependency
-     */
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,16 +34,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.roomdatabase.State
 import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
+import com.example.bsuirjournal2.viewmodels.AuthorisationViewModel
 import com.example.bsuirjournal2.viewmodels.ScheduleUiState
 
 @Composable
 fun MainScreen(
+    navController: NavController,
     state: State,
     onEvent: (SubjectStateEvent) -> Unit,
+    authorisationViewModel: AuthorisationViewModel,
     sharedPreferences: SharedPreferences,
     scheduleUiState: ScheduleUiState,
     retryAction: () -> Unit,
@@ -67,9 +73,12 @@ fun MainScreen(
 
             ScheduleScreen(
                 state = state,
+                authorisationViewModel = authorisationViewModel,
+                editor = sharedPreferences.edit(),
                 onEvent = onEvent,
                 listOfSubjects = GroupApiHolder.uniqueSubjects,
                 currentWeek = GroupApiHolder.currentWeek,
+                navController = navController
             )
         }
         is ScheduleUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
@@ -79,7 +88,10 @@ fun MainScreen(
 
 @Composable
 fun ScheduleScreen(
+    navController: NavController,
     state: State,
+    authorisationViewModel: AuthorisationViewModel,
+    editor: SharedPreferences.Editor,
     onEvent: (SubjectStateEvent) -> Unit,
     listOfSubjects: List<String?>,
     currentWeek: Int?,
@@ -199,6 +211,21 @@ fun ScheduleScreen(
                 }
             }
         }
+    }
+    Button(onClick = {
+        editor.apply {
+            putBoolean("authorised", false)
+            putString("selectedGroup", null)
+            putString("subgroup", null)
+            putString("token", null)
+            apply()
+        }
+        authorisationViewModel.authorised = false
+        authorisationViewModel.registrated = false
+        navController.navigate(BSUIRJournalScreen.Authorisation.name)
+    }
+    ) {
+        Text(text = "Выйти")
     }
 }
 

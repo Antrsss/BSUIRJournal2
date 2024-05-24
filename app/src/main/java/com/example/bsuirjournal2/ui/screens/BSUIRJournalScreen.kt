@@ -1,6 +1,7 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -23,9 +24,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bsuirjournal2.R
+import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.roomdatabase.State
 import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
+import com.example.bsuirjournal2.viewmodels.AuthorisationViewModel
 import com.example.bsuirjournal2.viewmodels.GroupsViewModel
+import com.example.bsuirjournal2.viewmodels.NotesViewModel
 import com.example.bsuirjournal2.viewmodels.ScheduleViewModel
 
 
@@ -79,31 +83,49 @@ fun BSUIRJournalApp (
 
         val editor = sharedPreferences.edit()
 
+        val authorisationViewModel: AuthorisationViewModel =
+            viewModel(factory = AuthorisationViewModel.Factory)
+
+        val groupsViewModel: GroupsViewModel =
+            viewModel(factory = GroupsViewModel.Factory)
+
+        val notesViewModel: NotesViewModel =
+            viewModel(factory = NotesViewModel.Factory)
+
+        authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
+        GroupApiHolder.currentGroup = sharedPreferences.getString("selectedGroup", null)
+        GroupApiHolder.currentSubgroup = sharedPreferences.getInt("subgroup", 0)
+        GroupApiHolder.currentWeek = sharedPreferences.getInt("lastWeek", 0)
+
         NavHost(
             navController = navController,
             startDestination = BSUIRJournalScreen.Authorisation.name,
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(route = BSUIRJournalScreen.Authorisation.name) {
-                val groupsViewModel: GroupsViewModel =
-                    viewModel(factory = GroupsViewModel.Factory)
 
-                AuthorisationScreen(
-                    groupsViewModel = groupsViewModel,
-                    navController = navController,
-                    sharedPreferences = sharedPreferences,
-                    editor = editor,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (authorisationViewModel.authorised == false) {
+                    AuthorisationScreen(
+                        groupsViewModel = groupsViewModel,
+                        authorisationViewModel = authorisationViewModel,
+                        navController = navController,
+                        sharedPreferences = sharedPreferences,
+                        editor = editor,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                else {
+                    navController.navigate(BSUIRJournalScreen.Schedule.name)
+                }
             }
             composable(route = BSUIRJournalScreen.GroupList.name) {
-                val groupsViewModel: GroupsViewModel =
-                    viewModel(factory = GroupsViewModel.Factory)
 
                 HomeScreen(
                     navController = navController,
                     groupsUiState = groupsViewModel.groupsUiState,
+                    onEvent = onEvent,
                     sharedPreferences = sharedPreferences,
+                    editor = editor,
                     retryAction = { groupsViewModel::getGroupNumbers },
                 )
             }
@@ -111,11 +133,10 @@ fun BSUIRJournalApp (
                 val scheduleViewModel: ScheduleViewModel =
                     viewModel(factory = ScheduleViewModel.Factory)
 
-                val currentGroup = sharedPreferences.getString("selectedGroup", "")
-
-                val context = LocalContext.current
                 MainScreen(
+                    navController = navController,
                     scheduleUiState = scheduleViewModel.scheduleUiState,
+                    authorisationViewModel = authorisationViewModel,
                     retryAction = { scheduleViewModel::getGroupSchedule },
                     state = state,
                     onEvent = onEvent ,
@@ -126,3 +147,4 @@ fun BSUIRJournalApp (
         }
     }
 }
+
