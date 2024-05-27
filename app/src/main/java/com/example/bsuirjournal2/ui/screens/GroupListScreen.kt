@@ -1,5 +1,6 @@
 package com.example.bsuirjournal2.ui.screens
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +40,9 @@ import com.example.bsuirjournal2.data.GroupApiHolder
 fun GroupListScreen(
     groupNumberOptions: MutableState<List<String>>,
     onGroupCardClicked: (String) -> Unit,
+    sharedPreferences: SharedPreferences,
+    editor: SharedPreferences.Editor,
+    callChooseNumSubgroupDialog: MutableState<Boolean>,
     modifier: Modifier = Modifier
 ) {
     var searchText = remember { mutableStateOf("") }

@@ -15,21 +15,21 @@ import retrofit2.http.PATCH
 
 interface NotesApiService {
     @GET("notes/")
-    suspend fun getNotes(@Header("Authorization") token: String): List<Note>
+    suspend fun getNotes(@Header("Authorization") token: String?): List<Note>
 
     @POST("notes/")
-    fun postNote(@Header("Authorization") token: String, @Body note: Note): Call<Note>
+    fun postNote(@Header("Authorization") token: String?, @Body note: Note): Call<Note>
 
     @DELETE("notes/{id}")
-    fun deleteNote(@Header("Authorization") token: String, @Path("id") id: Long): Call<Note>
+    fun deleteNote(@Header("Authorization") token: String?, @Path("id") id: Long): Call<Note>
 
     @PATCH("notes/{id}")
     fun patchNote(
-        @Header("Authorization") token: String,
+        @Header("Authorization") token: String?,
         @Path("id") id: Long,
         @Body note: Note
     ): Call<Note>
 
     @GET("notes/{id}")
-    fun getNote(@Header("Authorization") token: String, @Path("id") id: Long): Call<Note>
+    fun getNote(@Header("Authorization") token: String?, @Path("id") id: Long): Call<Note>
 }

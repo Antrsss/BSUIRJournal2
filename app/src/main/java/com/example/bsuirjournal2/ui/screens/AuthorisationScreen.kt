@@ -1,7 +1,6 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +14,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -28,16 +29,16 @@ import com.example.bsuirjournal2.viewmodels.GroupsViewModel
 
 @Composable
 fun AuthorisationScreen(
-    groupsViewModel: GroupsViewModel,
     authorisationViewModel: AuthorisationViewModel,
-    navController: NavHostController,
-    sharedPreferences: SharedPreferences,
     editor: SharedPreferences.Editor,
     modifier: Modifier
 ) {
 
     val username = remember{mutableStateOf("")}
     val password = remember{mutableStateOf("")}
+
+    var isRegistartionButtonVisible by remember { mutableStateOf(true) }
+
     Column (
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -61,37 +62,36 @@ fun AuthorisationScreen(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Row {
-            Button(
-                onClick = {
-                    authorisationViewModel.registerUser(
-                        user = User(
-                            id = 0,
-                            username = username.value,
-                            password = password.value
+            if (isRegistartionButtonVisible) {
+                Button(
+                    onClick = {
+                        editor.apply {
+                            editor.putBoolean("authorised", true)
+                            editor.putString("username", username.value)
+                            editor.putString("password", password.value)
+                            apply()
+                        }
+                        isRegistartionButtonVisible = false
+                        authorisationViewModel.registerUser(
+                            user = User(
+                                id = 0,
+                                username = username.value,
+                                password = password.value
+                            )
                         )
-                    )
-                    /*if (authorisationViewModel.registrated == true) {
-                    editor.apply {
-                        putBoolean("authorised", true)
-                        putString("token", "${authorisationViewModel.token}")
-                        apply()
-                    }
-                        navController.navigate(BSUIRJournalScreen.GroupList.name)
-                    }*/
-
-                    editor.apply {
-                        putBoolean("authorised", true)
-                        apply()
-                    }
-                    navController.navigate(BSUIRJournalScreen.GroupList.name)
-                },
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(text = "Зарегестрироваться")
+                    },
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(text = "Зарегестрироваться")
+                }
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
+                    editor.apply {
+                        editor.putBoolean("authorised", true)
+                        apply()
+                    }
                     authorisationViewModel.authoriseUser(
                         user = User(
                             id = 0,
@@ -99,20 +99,6 @@ fun AuthorisationScreen(
                             password = password.value
                         )
                     )
-                    /*if (authorisationViewModel.authorised == true) {
-                        editor.apply {
-                            putBoolean("authorised", true)
-                            putString("token", "${authorisationViewModel.token}")
-                            apply()
-                        }
-                        navController.navigate(BSUIRJournalScreen.Schedule.name)
-                    }*/
-
-                    editor.apply {
-                        putBoolean("authorised", true)
-                        apply()
-                    }
-                    navController.navigate(BSUIRJournalScreen.Schedule.name)
                 },
                 shape = RoundedCornerShape(16.dp)
             ) {

@@ -6,13 +6,14 @@ import com.example.bsuirjournal2.model.Schedule
 
 object GroupApiHolder {
     var currentWeekSchedule: Schedule.Schedules? = null
-    var currentSubgroup: Int? = null
+    var currentSubgroup: Int? = 0
     var listOfSubjects: MutableList<String?> = mutableListOf()
     lateinit var uniqueSubjects: List<String?>
 
     val groupNumberOptions: MutableList<String> = mutableListOf()
     var currentGroup: String? = null
     var currentWeek: Int? = null
+    var lastWeek: Int? = null
 
     fun createGroupNumberOptions(groups: List<Group>) {
         for (group in groups) {

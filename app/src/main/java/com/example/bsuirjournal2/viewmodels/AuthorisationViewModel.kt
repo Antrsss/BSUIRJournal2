@@ -3,6 +3,7 @@ package com.example.bsuirjournal2.viewmodels
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -28,70 +29,64 @@ class AuthorisationViewModel(
     private val authorisationRepository: AuthorisationRepository
 ) : ViewModel() {
 
-    var registrated = false
-    var authorised = false
-    var token: String = ""
+    var authorised: Boolean by mutableStateOf(false)
+    var username: String? = null
+    var password: String? = null
+    var token: String? = null
 
     fun registerUser(user: User) {
-        viewModelScope.launch {
-            authorisationRepository.registerUser(user).enqueue(object : Callback<ResponseBody> {
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    Log.wtf("registration", "failed to register")
-                    registrated = false
-                }
+        authorisationRepository.registerUser(user).enqueue(object : Callback<ResponseBody> {
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.wtf("registration", "failed to register")
+            }
 
-                override fun onResponse(
-                    call: Call<ResponseBody>,
-                    response: Response<ResponseBody>
-                ) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { responseBody ->
-                            val jsonResponse = responseBody.string()
-                            val registrationResponse = Gson().fromJson(jsonResponse, AuthorisationResponse::class.java)
-                            token = registrationResponse.token
-                            registrated = true
-                            Log.d("registration", "registered successfully with token: $token")
-                        } ?: run {
-                            registrated = false
-                            Log.wtf("registration", "response body is null")
-                        }
-                    } else {
-                        registrated = false
-                        Log.wtf("registration", "failed to register: ${response.code()}")
+            override fun onResponse(
+                call: Call<ResponseBody>,
+                response: Response<ResponseBody>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let { responseBody ->
+                        Log.d("registration", "registered successfully")
+                        authorisationRepository.authoriseUser(user)
+                    } ?: run {
+                        Log.wtf("registration", "response body is null")
                     }
+                } else {
+                    Log.wtf("registration", "failed to register: ${response.code()}")
                 }
-            })
-        }
+            }
+        })
     }
 
     fun authoriseUser(user: User) {
-        viewModelScope.launch {
-            authorisationRepository.authoriseUser(user).enqueue(object : Callback<AuthorisationResponse> {
-                override fun onFailure(call: Call<AuthorisationResponse>, t: Throwable) {
-                    Log.wtf("authorisation", "failed to authorise")
+        authorisationRepository.authoriseUser(user).enqueue(object : Callback<AuthorisationResponse> {
+            override fun onFailure(call: Call<AuthorisationResponse>, t: Throwable) {
+                Log.wtf("authorisation", "failed to authorise")
+                authorised = false
+            }
+
+            override fun onResponse(
+                call: Call<AuthorisationResponse>,
+                response: Response<AuthorisationResponse>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.let { authorisationResponse ->
+                        token = authorisationResponse.token
+                        Log.d("authorisation", "authorised successfully with token: $token")
+                        username = user.username
+                        password = user.password
+                        authorised = true
+                    } ?:
+                    run {
+                        Log.wtf("authorisation", "response body is null")
+                        authorised = false
+                    }
+                } else {
+                    Log.wtf("authorisation", "failed to authorise: ${response.code()}")
                     authorised = false
                 }
-
-                override fun onResponse(
-                    call: Call<AuthorisationResponse>,
-                    response: Response<AuthorisationResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { authorisationResponse ->
-                            token = authorisationResponse.token
-                            authorised = true
-                            Log.d("authorisation", "authorised successfully with token: $token")
-                        } ?: run {
-                            authorised = false
-                            Log.wtf("authorisation", "response body is null")
-                        }
-                    } else {
-                        authorised = false
-                        Log.wtf("authorisation", "failed to authorise: ${response.code()}")
-                    }
-                }
-            })
-        }
+            }
+        })
     }
 
     /*val user: User = User(id = 2, username = "kotlin", password = "kotlin")

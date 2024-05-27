@@ -105,6 +105,21 @@ fun ScheduleScreen(
             text = "Неделя $currentWeek",
             fontSize = 20.sp
         )
+        Row {
+        Button(onClick = {
+            authorisationViewModel.authorised = false
+            navController.navigate(BSUIRJournalScreen.Authorisation.name)
+        }
+        ) {
+            Text(text = "Выйти")
+        }
+        Button(onClick = {
+            navController.navigate(BSUIRJournalScreen.Notes.name)
+        }
+        ) {
+            Text(text = "Заметки")
+        }
+    }
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
@@ -211,21 +226,6 @@ fun ScheduleScreen(
                 }
             }
         }
-    }
-    Button(onClick = {
-        editor.apply {
-            putBoolean("authorised", false)
-            putString("selectedGroup", null)
-            putString("subgroup", null)
-            putString("token", null)
-            apply()
-        }
-        authorisationViewModel.authorised = false
-        authorisationViewModel.registrated = false
-        navController.navigate(BSUIRJournalScreen.Authorisation.name)
-    }
-    ) {
-        Text(text = "Выйти")
     }
 }
 

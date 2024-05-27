@@ -19,56 +19,47 @@ class NotesViewModel(
     private val notesRepository: NotesRepository
 ) : ViewModel() {
 
-    var notes: List<Note> = emptyList()
+    var notes: MutableList<Note> = mutableListOf()
     val noteToPatch: Note = Note(1998, "user2", "UUUUUFFF")
 
-    fun patchANote(token: String, id: Long, noteToPatch: Note) {
-        viewModelScope.launch {
-            notesRepository.patchANote(token, id, noteToPatch).enqueue(object : Callback<Note> {
-                override fun onResponse(call: Call<Note>, response: Response<Note>) {
-                    Log.d("Notes", "Patched")
-                }
-                override fun onFailure(call: Call<Note>, t: Throwable) {
-                    Log.d("Notes", "not Patched")
-                }
-            })
-        }
+    fun patchANote(token: String?, id: Long, noteToPatch: Note) {
+        notesRepository.patchANote(token, id, noteToPatch).enqueue(object : Callback<Note> {
+            override fun onResponse(call: Call<Note>, response: Response<Note>) {
+                Log.d("Notes", "Patched")
+            }
+            override fun onFailure(call: Call<Note>, t: Throwable) {
+                Log.d("Notes", "not Patched")
+            }
+        })
     }
     fun deleteANote(token: String, id: Long) {
-        viewModelScope.launch {
-            notesRepository.deleteANote(token, id).enqueue(object : Callback<Note> {
-                override fun onFailure(call: Call<Note>, t: Throwable) {
-                    Log.d("Notes", "del failed")
-                }
-                override fun onResponse(
-                    call: Call<Note>,
-                    response: Response<Note>
-                ) {
-                    Log.d("Notes", "del not failed")
-                }
-            })
-        }
+        notesRepository.deleteANote(token, id).enqueue(object : Callback<Note> {
+            override fun onFailure(call: Call<Note>, t: Throwable) {
+                Log.d("Notes", "del failed")
+            }
+            override fun onResponse(
+                call: Call<Note>,
+                response: Response<Note>
+            ) {
+                Log.d("Notes", "del not failed")
+            }
+        })
     }
 
     fun getNote(token: String, id: Long) {
-        viewModelScope.launch {
-            notesRepository.getNote(token, 20).enqueue(object : Callback<Note> {
-                override fun onFailure(call: Call<Note>, t: Throwable) {
-                    Log.wtf("Notes", "get fail")
-                }
-                override fun onResponse(call: Call<Note>, response: Response<Note>) {
-                    Log.d("Notes", "got ${response.body()}")
-                }
-            })
-        }
+        notesRepository.getNote(token, 20).enqueue(object : Callback<Note> {
+            override fun onFailure(call: Call<Note>, t: Throwable) {
+                Log.wtf("Notes", "get fail")
+            }
+            override fun onResponse(call: Call<Note>, response: Response<Note>) {
+                Log.d("Notes", "got ${response.body()}")
+            }
+        })
     }
 
-    fun getAllNotes(token: String) {
+    fun getAllNotes(token: String?) {
         viewModelScope.launch {
-            notes = notesRepository.getAllNotes(token)
-        }
-        for (note in notes) {
-            Log.wtf("NotesList", "$note")
+            notes = notesRepository.getAllNotes(token).toMutableList()
         }
     }
 

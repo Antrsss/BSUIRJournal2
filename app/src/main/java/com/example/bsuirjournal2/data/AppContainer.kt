@@ -30,15 +30,10 @@ interface AppContainer {
     val authorisationRepository: AuthorisationRepository
 }
 
-/**
- * Implementation for the Dependency Injection container at the application level.
- *
- * Variables are initialized lazily and the same instance is shared across the whole app.
- */
 class DefaultAppContainer : AppContainer {
     private val baseUrl =
         "https://iis.bsuir.by/api/v1/"
-    private val baseUrl2 = "http://10.0.2.2:8080/"
+    private val baseUrl2 = "http://192.168.1.33:8080/"
 
     private val retrofit: Retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
@@ -48,6 +43,7 @@ class DefaultAppContainer : AppContainer {
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(baseUrl2)
         .build()
+    //80.249.89.149
 
     /**
      * Retrofit service object for creating api calls

@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
+import com.example.bsuirjournal2.model.User
 import com.example.bsuirjournal2.roomdatabase.State
 import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
 import com.example.bsuirjournal2.viewmodels.AuthorisationViewModel
@@ -37,6 +38,7 @@ enum class BSUIRJournalScreen() {
     Authorisation,
     GroupList,
     Schedule,
+    Notes
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,10 +94,24 @@ fun BSUIRJournalApp (
         val notesViewModel: NotesViewModel =
             viewModel(factory = NotesViewModel.Factory)
 
-        authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
-        GroupApiHolder.currentGroup = sharedPreferences.getString("selectedGroup", null)
-        GroupApiHolder.currentSubgroup = sharedPreferences.getInt("subgroup", 0)
-        GroupApiHolder.currentWeek = sharedPreferences.getInt("lastWeek", 0)
+        GroupApiHolder.lastWeek = sharedPreferences.getInt("lastWeek", 0)
+
+        if (authorisationViewModel.authorised == true) {
+            /*authorisationViewModel.username = sharedPreferences.getString("username", null)
+            authorisationViewModel.password = sharedPreferences.getString("password", null)
+            authorisationViewModel.authoriseUser(User(id = 0, username = authorisationViewModel.username, password = authorisationViewModel.password))*/
+            if (authorisationViewModel.token == null)
+                authorisationViewModel.token = sharedPreferences.getString("token", null)
+            else
+                editor.apply {
+                    editor.putString("token", authorisationViewModel.token)
+                    apply()
+                }
+        }
+        else {
+            authorisationViewModel.token = sharedPreferences.getString("token", null)
+            authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
+        }
 
         NavHost(
             navController = navController,
@@ -105,17 +121,27 @@ fun BSUIRJournalApp (
             composable(route = BSUIRJournalScreen.Authorisation.name) {
 
                 if (authorisationViewModel.authorised == false) {
+                    editor.apply {
+                        editor.putBoolean("authorised", false)
+                        editor.putString("selectedGroup", null)
+                        editor.putInt("subgroup", 0)
+                        editor.putString("token", null)
+                        editor.putString("username", null)
+                        editor.putString("password", null)
+                        apply()
+                    }
+                    onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
+
                     AuthorisationScreen(
-                        groupsViewModel = groupsViewModel,
                         authorisationViewModel = authorisationViewModel,
-                        navController = navController,
-                        sharedPreferences = sharedPreferences,
                         editor = editor,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
                 else {
-                    navController.navigate(BSUIRJournalScreen.Schedule.name)
+                    authorisationViewModel.username = sharedPreferences.getString("username", null)
+                    authorisationViewModel.password = sharedPreferences.getString("password", null)
+                    navController.navigate(BSUIRJournalScreen.GroupList.name)
                 }
             }
             composable(route = BSUIRJournalScreen.GroupList.name) {
@@ -142,6 +168,13 @@ fun BSUIRJournalApp (
                     onEvent = onEvent ,
                     sharedPreferences = sharedPreferences,
                     modifier = Modifier
+                )
+            }
+            composable(route = BSUIRJournalScreen.Notes.name) {
+
+                NoteScreen(
+                    notesViewModel = notesViewModel,
+                    authorisationViewModel = authorisationViewModel
                 )
             }
         }

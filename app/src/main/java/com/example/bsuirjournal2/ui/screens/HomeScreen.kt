@@ -67,14 +67,11 @@ fun HomeScreen(
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is GroupsUiState.Success -> {
 
-            var lastWeek = sharedPreferences.getInt("lastWeek", 0)
+            GroupApiHolder.currentWeek = groupsUiState.currentWeek
 
-            if (groupsUiState.currentWeek != lastWeek) {
-                editor.putInt("lastWeek", groupsUiState.currentWeek)
+            if (GroupApiHolder.lastWeek != GroupApiHolder.currentWeek) {
                 onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
             }
-
-            GroupApiHolder.currentWeek = groupsUiState.currentWeek
 
             val currentGroup = sharedPreferences.getString("selectedGroup", null)
             GroupApiHolder.currentGroup = currentGroup
@@ -85,9 +82,9 @@ fun HomeScreen(
             GroupApiHolder.groupNumberOptions.clear()
             GroupApiHolder.createGroupNumberOptions(groupsUiState.groups)
 
-            if (currentGroup == null) {
+            val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
 
-                val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
+            if (GroupApiHolder.currentGroup == null) {
 
                 GroupListScreen(
                     groupNumberOptions = remember {
@@ -101,28 +98,30 @@ fun HomeScreen(
                         GroupApiHolder.currentGroup = it
                         callChooseNumSubgroupDialog.value = true
                     },
+                    sharedPreferences = sharedPreferences,
+                    editor = editor,
+                    callChooseNumSubgroupDialog = callChooseNumSubgroupDialog,
                     modifier = Modifier
                         .fillMaxSize()
                 )
-                if (callChooseNumSubgroupDialog.value == true) {
-                    ChooseNumSubgroupDialog(
-                        navController = navController,
-                        editor = editor,
-                        onDismissRequest = callChooseNumSubgroupDialog
-                    )
-                }
             }
             else {
                 navController.navigate(BSUIRJournalScreen.Schedule.name)
+            }
+
+            if (callChooseNumSubgroupDialog.value == true) {
+
+                ChooseNumSubgroupDialog(
+                    navController = navController,
+                    editor = editor,
+                    onDismissRequest = callChooseNumSubgroupDialog
+                )
             }
         }
         is GroupsUiState.Error -> ErrorScreen(retryAction = retryAction, modifier = modifier.fillMaxSize())
     }
 }
 
-/**
- * The home screen displaying the loading message.
- */
 @Composable
 fun LoadingScreen(modifier: Modifier = Modifier) {
     Image(
@@ -132,9 +131,6 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
     )
 }
 
-/**
- * The home screen displaying error message with re-attempt button.
- */
 @Composable
 fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
     Column(
