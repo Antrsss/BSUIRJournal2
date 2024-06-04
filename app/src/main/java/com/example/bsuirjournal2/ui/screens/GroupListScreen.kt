@@ -53,6 +53,7 @@ fun GroupListScreen(
     var isActive by rememberSaveable { mutableStateOf(false) }
     val painter = painterResource(id = R.drawable.ic_list)
     val description = ""
+
     SearchBar(
         modifier = Modifier
             .fillMaxWidth()

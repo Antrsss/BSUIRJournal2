@@ -61,18 +61,9 @@ fun MainScreen(
             GroupApiHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
             GroupApiHolder.createListOfSubjects()
 
-            Log.d("MyUi", "Initial state size: ${state.subjectsStates.size}")
-            Log.d("MyUi", "Unique subjects size: ${GroupApiHolder.uniqueSubjects.size}")
-
             if (state.subjectsStates.size < GroupApiHolder.uniqueSubjects.size) {
-                Log.d("MyUi", "Saving new subject state")
                 onEvent(SubjectStateEvent.SaveSubjectState)
-            } else if (state.subjectsStates.size > GroupApiHolder.uniqueSubjects.size) {
-                Log.d("MyUi", "Deleting excess subject state")
-                //onEvent(SubjectStateEvent.DeleteSubjectState(state.subjectsStates[10]))
             }
-
-            Log.d("MyUi", "New state size: ${state.subjectsStates.size}")
 
             ScheduleScreen(
                 state = state,
@@ -147,7 +138,8 @@ fun ScheduleScreen(
             modifier = Modifier.padding(vertical = 4.dp)
         ) {
             items(state.subjectsStates) { item ->
-                item!!.let {
+                if (state.subjectsStates.indexOf(item) < listOfSubjects.size)
+                    item!!.let {
                     Row(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -288,6 +280,7 @@ fun ChooseCheckSquareDialog(
     val arrowPainter = painterResource(id = R.drawable.task_arrow)
     val cancelPainter = painterResource(id = R.drawable.task_cancel)
     val description = null
+
     Dialog(
         onDismissRequest = onDismissRequest
     ) {

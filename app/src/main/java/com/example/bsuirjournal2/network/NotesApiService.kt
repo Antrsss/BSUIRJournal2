@@ -24,11 +24,7 @@ interface NotesApiService {
     fun deleteNote(@Header("Authorization") token: String?, @Path("id") id: Long): Call<Note>
 
     @PATCH("notes/{id}")
-    fun patchNote(
-        @Header("Authorization") token: String?,
-        @Path("id") id: Long,
-        @Body note: Note
-    ): Call<Note>
+    fun patchNote(@Header("Authorization") token: String?, @Path("id") id: Long, @Body note: Note): Call<Note>
 
     @GET("notes/{id}")
     fun getNote(@Header("Authorization") token: String?, @Path("id") id: Long): Call<Note>

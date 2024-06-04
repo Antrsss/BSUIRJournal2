@@ -81,41 +81,6 @@ class SubjectStateViewModel(
                     rollNo = rollNo + 1
                 ) }
             }
-            /*is SubjectStateEvent.SetMondayState -> {
-                _state.update { it.copy(
-                    monday = event.monday
-                ) }
-            }
-            is SubjectStateEvent.SetTuesdayState -> {
-                _state.update { it.copy(
-                    tuesday = event.tuesday
-                ) }
-            }
-            is SubjectStateEvent.SetWednesdayState -> {
-                _state.update { it.copy(
-                    wednesday = event.wednesday
-                ) }
-            }
-            is SubjectStateEvent.SetThursdayState -> {
-                _state.update { it.copy(
-                    thursday = event.thursday
-                ) }
-            }
-            is SubjectStateEvent.SetFridayState -> {
-                _state.update { it.copy(
-                    friday = event.friday
-                ) }
-            }
-            is SubjectStateEvent.SetSaturdayState -> {
-                _state.update { it.copy(
-                    saturday = event.saturday
-                ) }
-            }
-            is SubjectStateEvent.SetSundayState -> {
-                _state.update { it.copy(
-                    sunday = event.sunday
-                ) }
-            }*/
             is SubjectStateEvent.UpdateMonday -> {
                 viewModelScope.launch {
                     dao.updateMonday(event.monday, event.roll)
@@ -153,6 +118,17 @@ class SubjectStateViewModel(
             }
             is SubjectStateEvent.DeleteAllSubjectsStates -> {
                 viewModelScope.launch {
+                    _state.update { it.copy(
+                        isAddingSubjectState = false,
+                        monday = "clearPainter",
+                        tuesday = "clearPainter",
+                        wednesday = "clearPainter",
+                        thursday = "clearPainter",
+                        friday = "clearPainter",
+                        saturday = "clearPainter",
+                        sunday = "clearPainter",
+                        rollNo = 0
+                    ) }
                     dao.deleteAllSubjectsStates()
                 }
             }

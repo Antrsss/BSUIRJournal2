@@ -39,8 +39,8 @@ fun AccountScreen(
     modifier: Modifier
 ) {
 
-    val username = remember{mutableStateOf("")}
-    val password = remember{mutableStateOf("")}
+    val username = remember{ mutableStateOf("") }
+    val password = remember{ mutableStateOf("") }
 
     var isRegistrationButtonVisible by remember { mutableStateOf(true) }
 
@@ -72,12 +72,6 @@ fun AccountScreen(
             if (isRegistrationButtonVisible) {
                 Button(
                     onClick = {
-                        editor.apply {
-                            editor.putBoolean("authorised", true)
-                            editor.putString("username", username.value)
-                            editor.putString("password", password.value)
-                            apply()
-                        }
                         isRegistrationButtonVisible = false
                         authorisationViewModel.registerUser(
                             user = User(
@@ -86,6 +80,10 @@ fun AccountScreen(
                                 password = password.value
                             )
                         )
+                        editor.apply {
+                            editor.putString("password", password.value)
+                            commit()
+                        }
                     },
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -95,10 +93,7 @@ fun AccountScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    editor.apply {
-                        editor.putBoolean("authorised", true)
-                        apply()
-                    }
+                    authorisationViewModel.authorised = true
                     authorisationViewModel.authoriseUser(
                         user = User(
                             id = 0,
@@ -106,7 +101,12 @@ fun AccountScreen(
                             password = password.value
                         )
                     )
-                    authorisationViewModel.authorised = true
+                    editor.apply {
+                        editor.putBoolean("authorised", true)
+                        putString("username", username.value)
+                        putString("token", authorisationViewModel.token)
+                        commit()
+                    }
                     navController.navigate(BSUIRJournalScreen.GroupList.name)
                 },
                 shape = RoundedCornerShape(16.dp)
@@ -116,18 +116,25 @@ fun AccountScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
+                    authorisationViewModel.authorised = false
+
+                    GroupApiHolder.uniqueSubjects = emptyList()
+                    GroupApiHolder.listOfSubjects.clear()
+                    GroupApiHolder.currentGroup = null
+                    GroupApiHolder.currentSubgroup = null
+                    GroupApiHolder.currentWeekSchedule = null
+                    onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
+                    state.subjectsStates = emptyList<SubjectState>()
+
                     editor.apply {
-                        putString("authorised", null)
+                        putBoolean("authorised", false)
                         putString("username", null)
                         putString("token", null)
                         putString("currentGroup", null)
                         putInt("subgroup", 0)
-                        apply()
+                        commit()
                     }
-                    onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
-                    state.subjectsStates = emptyList<SubjectState>()
-                    GroupApiHolder.uniqueSubjects = emptyList()
-                    authorisationViewModel.authorised = false
+
                     navController.navigate(BSUIRJournalScreen.Authorisation.name)
                 },
                 shape = RoundedCornerShape(16.dp)

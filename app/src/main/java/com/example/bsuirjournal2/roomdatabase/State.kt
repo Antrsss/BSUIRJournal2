@@ -9,6 +9,6 @@ data class State(
     val friday: String = "clearPainter",
     val saturday: String = "clearPainter",
     val sunday: String = "clearPainter",
-    val rollNo: Int = 0,
+    var rollNo: Int = 0,
     val isAddingSubjectState: Boolean = false,
 )

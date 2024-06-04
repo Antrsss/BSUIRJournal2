@@ -28,7 +28,7 @@ object GroupApiHolder {
     }
     fun createListOfSubjects() {
         var isSubjectInThisWeek: Boolean
-        for (schedulesItem in currentWeekSchedule!!.monday!!) {
+        for (schedulesItem in currentWeekSchedule?.monday!!) {
             isSubjectInThisWeek = false
             schedulesItem?.weekNumber?.let {
                 for (weekNumber in it) {
@@ -42,7 +42,7 @@ object GroupApiHolder {
                 listOfSubjects.add(schedulesItem.subject)
             }
         }
-        for (schedulesItem in currentWeekSchedule!!.tuesday!!) {
+        for (schedulesItem in currentWeekSchedule?.tuesday!!) {
             isSubjectInThisWeek = false
             schedulesItem?.weekNumber?.let {
                 for (weekNumber in it) {
@@ -56,7 +56,7 @@ object GroupApiHolder {
                 listOfSubjects.add(schedulesItem.subject)
             }
         }
-        for (schedulesItem in currentWeekSchedule!!.wednesday!!) {
+        for (schedulesItem in currentWeekSchedule?.wednesday!!) {
             isSubjectInThisWeek = false
             schedulesItem?.weekNumber?.let {
                 for (weekNumber in it) {
@@ -70,7 +70,7 @@ object GroupApiHolder {
                 listOfSubjects.add(schedulesItem.subject)
             }
         }
-        for (schedulesItem in currentWeekSchedule!!.thursday!!) {
+        for (schedulesItem in currentWeekSchedule?.thursday!!) {
             isSubjectInThisWeek = false
             schedulesItem?.weekNumber?.let {
                 for (weekNumber in it) {
@@ -84,7 +84,7 @@ object GroupApiHolder {
                 listOfSubjects.add(schedulesItem.subject)
             }
         }
-        for (schedulesItem in currentWeekSchedule!!.friday!!) {
+        for (schedulesItem in currentWeekSchedule?.friday!!) {
             isSubjectInThisWeek = false
             schedulesItem?.weekNumber?.let {
                 for (weekNumber in it) {
@@ -98,7 +98,7 @@ object GroupApiHolder {
                 listOfSubjects.add(schedulesItem.subject)
             }
         }
-        for (schedulesItem in currentWeekSchedule!!.saturday!!) {
+        for (schedulesItem in currentWeekSchedule?.saturday!!) {
             isSubjectInThisWeek = false
             schedulesItem?.weekNumber?.let {
                 for (weekNumber in it) {

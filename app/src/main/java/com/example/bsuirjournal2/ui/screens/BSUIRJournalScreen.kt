@@ -178,18 +178,6 @@ fun Navigation (
 
             authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
 
-            if (authorisationViewModel.authorised) {
-                if (authorisationViewModel.token != null) {
-                    editor.apply {
-                        putString("token", authorisationViewModel.token)
-                        apply()
-                    }
-                }
-                else {
-                    authorisationViewModel.token = sharedPreferences.getString("token", null)
-                }
-            }
-
             NavHost(
                 navController = navController,
                 startDestination = BSUIRJournalScreen.Authorisation.name,
@@ -197,19 +185,15 @@ fun Navigation (
             ) {
                 composable(route = BSUIRJournalScreen.Authorisation.name) {
 
-                    Log.d("MyUi", "Authorised: ${authorisationViewModel.authorised}")
-                    Log.d("MyUi", "StateSize: ${state.subjectsStates.size}")
-
                     if (!authorisationViewModel.authorised) {
 
-                        Log.d("MyUi", "The problem1")
                         editor.apply {
-                            putString("authorised", null)
+                            putBoolean("authorised", false)
                             putString("username", null)
                             putString("token", null)
                             putString("currentGroup", null)
                             putInt("subgroup", 0)
-                            apply()
+                            commit()
                         }
                         onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
 
@@ -221,15 +205,32 @@ fun Navigation (
                         )
                     }
                     else {
-                        Log.d("MyUi", "The problem2")
                         authorisationViewModel.username = sharedPreferences.getString("username", null)
-                        authorisationViewModel.token = sharedPreferences.getString("token", null)
+
+                        if (authorisationViewModel.token == null) {
+                            authorisationViewModel.token = sharedPreferences.getString("token", null)
+                        }
+                        else {
+                            editor.putString("token", authorisationViewModel.token)
+                            editor.commit()
+                        }
+
                         navController.navigate(BSUIRJournalScreen.GroupList.name)
                     }
                 }
                 composable(route = BSUIRJournalScreen.GroupList.name) {
 
-                    Log.d("MyUi", "The problem3")
+                    authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
+                    if (authorisationViewModel.authorised) {
+                        if (authorisationViewModel.token != null) {
+                            editor.apply {
+                                putString("token", authorisationViewModel.token)
+                                putString("username", authorisationViewModel.username)
+                                commit()
+                            }
+                        }
+                    }
+
                     HomeScreen(
                         navController = navController,
                         groupsUiState = groupsViewModel.groupsUiState,
@@ -243,9 +244,8 @@ fun Navigation (
                     val scheduleViewModel: ScheduleViewModel =
                         viewModel(factory = ScheduleViewModel.Factory)
 
+                    if (authorisationViewModel.authorised) {
 
-                    if (sharedPreferences.getBoolean("authorised", false)) {
-                        Log.d("MyUi", "The problem4")
                         MainScreen(
                             navController = navController,
                             scheduleUiState = scheduleViewModel.scheduleUiState,
@@ -257,16 +257,16 @@ fun Navigation (
                         )
                     }
                     else {
-                        Log.d("MyUi", "The problem5")
                         ErrorScreen(modifier = Modifier.fillMaxSize())
                     }
                 }
                 composable(route = BSUIRJournalScreen.Notes.name) {
-                    Log.d("MyUi", "The problem6")
-                    if (sharedPreferences.getBoolean("authorised", false)) {
+
+                    if (authorisationViewModel.authorised) {
                         NoteScreen(
                             notesViewModel = notesViewModel,
-                            authorisationViewModel = authorisationViewModel
+                            authorisationViewModel = authorisationViewModel,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     else {
@@ -274,7 +274,7 @@ fun Navigation (
                     }
                 }
                 composable(route = BSUIRJournalScreen.Account.name) {
-                    Log.d("MyUi", "The problem7")
+
                     AccountScreen(
                         authorisationViewModel = authorisationViewModel,
                         navController = navController,

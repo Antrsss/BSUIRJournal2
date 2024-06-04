@@ -47,7 +47,6 @@ class AuthorisationViewModel(
                 if (response.isSuccessful) {
                     response.body()?.let { responseBody ->
                         Log.d("registration", "registered successfully")
-                        authorisationRepository.authoriseUser(user)
                     } ?: run {
                         Log.wtf("registration", "response body is null")
                     }

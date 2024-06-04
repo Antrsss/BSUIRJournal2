@@ -21,17 +21,21 @@ class NotesViewModel(
     private val notesRepository: NotesRepository
 ) : ViewModel() {
 
-    val mynote: Note = Note(100, "user2", "from kocklin new")
-
-
-    val noteToPatch: Note = Note(1998, "user2", "UUUUUFFF")
-
     var notes = mutableListOf<Note>()
 
+    fun postANote(token: String?, noteToPost: Note) {
+        notesRepository.postANote("Bearer $token", noteToPost).enqueue(object : Callback<Note> {
+            override fun onResponse(call: Call<Note>, response: Response<Note>) {
+                Log.d("FUCK YEAH", "Posted")
+            }
+            override fun onFailure(call: Call<Note>, t: Throwable) {
+                Log.d("FUCK NO", "not Posted")
+            }
+        })
+    }
+    fun patchANote(token: String?, id: Long, noteToPatch: Note) {
 
-    fun patchANote(token: String?, noteToPatch: Note) {
-
-        notesRepository.patchANote("Bearer $token", 0, noteToPatch).enqueue(object : Callback<Note> {
+        notesRepository.patchANote("Bearer $token", id, noteToPatch).enqueue(object : Callback<Note> {
             override fun onResponse(call: Call<Note>, response: Response<Note>) {
                 Log.d("FUCK YEAH", "Patched")
             }
@@ -69,7 +73,6 @@ class NotesViewModel(
     }
 
     fun getAllNotes(token: String?) {
-        //или вместо viewModelScope попробовать CoroutineScope(Dispatchers.IO)
         viewModelScope.launch {
             val myNotes = notesRepository.getAllNotes("Bearer $token").toMutableList()
             notes = myNotes.toMutableList()

@@ -74,10 +74,7 @@ fun HomeScreen(
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is GroupsUiState.Success -> {
 
-            Log.d("MyUi", "The problem7")
             GroupApiHolder.currentWeek = groupsUiState.currentWeek
-            Log.d("MyUi", "TLastWeek ${GroupApiHolder.lastWeek}")
-            Log.d("MyUi", "TLastWeek ${GroupApiHolder.currentWeek}")
 
             if (GroupApiHolder.lastWeek != GroupApiHolder.currentWeek) {
                 editor.putInt("lastWeek", groupsUiState.currentWeek)
@@ -95,10 +92,7 @@ fun HomeScreen(
 
             val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
 
-            Log.d("MyUi", "CurGroup ${GroupApiHolder.currentGroup}")
-
             if (callChooseNumSubgroupDialog.value == true) {
-                Log.d("MyUi", "The problem8")
                 ChooseNumSubgroupDialog(
                     navController = navController,
                     editor = editor,

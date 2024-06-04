@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Note(
     val id: Long,
-    val author: String,
+    val author: String?,
     val content: String,
 )

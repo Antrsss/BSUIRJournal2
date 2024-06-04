@@ -58,13 +58,11 @@ class MainActivity : ComponentActivity() {
 
         val sharedPreferences = getSharedPreferences("localData", Context.MODE_PRIVATE)
 
-        Log.d("MyUi", "Created")
         setContent {
 
             BSUIRJournal2Theme {
                 val state by subjectStateViewModel.state.collectAsState()
-                val size = state.subjectsStates.size
-                Log.d("MyUi", "StateSizeStart $size")
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
