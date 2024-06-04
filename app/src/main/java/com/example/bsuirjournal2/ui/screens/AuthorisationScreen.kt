@@ -90,10 +90,6 @@ fun AuthorisationScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
-                    editor.apply {
-                        putBoolean("authorised", true)
-                        apply()
-                    }
                     authorisationViewModel.authoriseUser(
                         user = User(
                             id = 0,
@@ -101,6 +97,11 @@ fun AuthorisationScreen(
                             password = password.value
                         )
                     )
+                    editor.apply {
+                        putBoolean("authorised", true)
+                        putString("token", authorisationViewModel.token)
+                        apply()
+                    }
                     authorisationViewModel.authorised = true
                     navController.navigate(BSUIRJournalScreen.GroupList.name)
                 },

@@ -178,6 +178,18 @@ fun Navigation (
 
             authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
 
+            if (authorisationViewModel.authorised) {
+                if (authorisationViewModel.token != null) {
+                    editor.apply {
+                        putString("token", authorisationViewModel.token)
+                        apply()
+                    }
+                }
+                else {
+                    authorisationViewModel.token = sharedPreferences.getString("token", null)
+                }
+            }
+
             NavHost(
                 navController = navController,
                 startDestination = BSUIRJournalScreen.Authorisation.name,
