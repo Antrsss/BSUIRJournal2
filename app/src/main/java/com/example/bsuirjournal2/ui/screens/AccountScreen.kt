@@ -1,15 +1,13 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
@@ -24,14 +22,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
+import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.model.User
+import com.example.bsuirjournal2.roomdatabase.State
+import com.example.bsuirjournal2.roomdatabase.SubjectState
+import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
 import com.example.bsuirjournal2.viewmodels.AuthorisationViewModel
-import com.example.bsuirjournal2.viewmodels.GroupsViewModel
 
 @Composable
-fun AuthorisationScreen(
+fun AccountScreen(
     authorisationViewModel: AuthorisationViewModel,
+    onEvent: (SubjectStateEvent) -> Unit,
+    state: State,
     navController: NavController,
     editor: SharedPreferences.Editor,
     modifier: Modifier
@@ -40,7 +42,7 @@ fun AuthorisationScreen(
     val username = remember{mutableStateOf("")}
     val password = remember{mutableStateOf("")}
 
-    var isRegistartionButtonVisible by remember { mutableStateOf(true) }
+    var isRegistrationButtonVisible by remember { mutableStateOf(true) }
 
     Column (
         verticalArrangement = Arrangement.Top,
@@ -56,24 +58,27 @@ fun AuthorisationScreen(
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = username.value,
-            onValueChange = { username.value = it }
+            onValueChange = { username.value = it },
+            label = { Text(text = "Логин")}
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = password.value,
-            onValueChange = { password.value = it }
+            onValueChange = { password.value = it },
+            label = { Text(text = "Пароль")}
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Row {
-            if (isRegistartionButtonVisible) {
+        Column {
+            if (isRegistrationButtonVisible) {
                 Button(
                     onClick = {
                         editor.apply {
-                            putString("username", username.value)
-                            putString("password", password.value)
+                            editor.putBoolean("authorised", true)
+                            editor.putString("username", username.value)
+                            editor.putString("password", password.value)
                             apply()
                         }
-                        isRegistartionButtonVisible = false
+                        isRegistrationButtonVisible = false
                         authorisationViewModel.registerUser(
                             user = User(
                                 id = 0,
@@ -87,11 +92,11 @@ fun AuthorisationScreen(
                     Text(text = "Зарегестрироваться")
                 }
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
                     editor.apply {
-                        putBoolean("authorised", true)
+                        editor.putBoolean("authorised", true)
                         apply()
                     }
                     authorisationViewModel.authoriseUser(
@@ -107,6 +112,27 @@ fun AuthorisationScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(text = "Войти")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    editor.apply {
+                        putString("authorised", null)
+                        putString("username", null)
+                        putString("token", null)
+                        putString("currentGroup", null)
+                        putInt("subgroup", 0)
+                        apply()
+                    }
+                    onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
+                    state.subjectsStates = emptyList<SubjectState>()
+                    GroupApiHolder.uniqueSubjects = emptyList()
+                    authorisationViewModel.authorised = false
+                    navController.navigate(BSUIRJournalScreen.Authorisation.name)
+                },
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(text = "Выйти")
             }
         }
     }

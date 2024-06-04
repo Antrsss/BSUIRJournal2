@@ -34,6 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
+import com.example.bsuirjournal2.ui.theme.inversePrimaryLightMediumContrast
+import com.example.bsuirjournal2.ui.theme.onPrimaryContainerLight
+import com.example.bsuirjournal2.ui.theme.tertiaryContainerDark
+import com.example.bsuirjournal2.ui.theme.tertiaryContainerLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +101,7 @@ fun GroupCard(
             .clickable { onClick(group) },
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(),
+        colors = CardDefaults.cardColors(onPrimaryContainerLight),
     ) {
         Row(modifier = Modifier.height(75.dp)) {
             Image(

@@ -43,11 +43,8 @@ class DefaultAppContainer : AppContainer {
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(baseUrl2)
         .build()
-    //80.249.89.149
 
-    /**
-     * Retrofit service object for creating api calls
-     */
+
     private val retrofitService: GroupsApiService by lazy {
         retrofit.create(GroupsApiService::class.java)
     }
@@ -59,9 +56,7 @@ class DefaultAppContainer : AppContainer {
         retrofit2.create(AuthorisationApiService::class.java)
     }
 
-    /**
-     * DI implementation for Mars photos repository
-     */
+
     override val groupNumbersRepository: GroupNumbersRepository by lazy {
         NetworkGroupNumbersRepository(retrofitService)
     }

@@ -10,6 +10,8 @@ import com.example.bsuirjournal2.GroupNumbersApplication
 import com.example.bsuirjournal2.data.NotesRepository
 import com.example.bsuirjournal2.model.Note
 import com.example.bsuirjournal2.model.User
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,47 +21,58 @@ class NotesViewModel(
     private val notesRepository: NotesRepository
 ) : ViewModel() {
 
-    var notes: MutableList<Note> = mutableListOf()
+    val mynote: Note = Note(100, "user2", "from kocklin new")
+
+
     val noteToPatch: Note = Note(1998, "user2", "UUUUUFFF")
 
-    fun patchANote(token: String?, id: Long, noteToPatch: Note) {
-        notesRepository.patchANote(token, id, noteToPatch).enqueue(object : Callback<Note> {
+    var notes = mutableListOf<Note>()
+
+
+    fun patchANote(token: String?, noteToPatch: Note) {
+
+        notesRepository.patchANote("Bearer $token", 0, noteToPatch).enqueue(object : Callback<Note> {
             override fun onResponse(call: Call<Note>, response: Response<Note>) {
-                Log.d("Notes", "Patched")
+                Log.d("FUCK YEAH", "Patched")
             }
             override fun onFailure(call: Call<Note>, t: Throwable) {
-                Log.d("Notes", "not Patched")
+                Log.d("FUCK NO", "not Patched")
             }
         })
     }
-    fun deleteANote(token: String, id: Long) {
-        notesRepository.deleteANote(token, id).enqueue(object : Callback<Note> {
+
+    fun deleteANote(token: String?, id: Long) {
+
+        notesRepository.deleteANote("Bearer $token", id).enqueue(object : Callback<Note> {
             override fun onFailure(call: Call<Note>, t: Throwable) {
-                Log.d("Notes", "del failed")
+                Log.d("del", "del failed")
             }
             override fun onResponse(
                 call: Call<Note>,
                 response: Response<Note>
             ) {
-                Log.d("Notes", "del not failed")
+                Log.d("del", "del not failed")
             }
         })
     }
 
-    fun getNote(token: String, id: Long) {
-        notesRepository.getNote(token, 20).enqueue(object : Callback<Note> {
+    fun getNote(token: String?, id: Long) {
+
+        notesRepository.getNote("Bearer $token", id).enqueue(object : Callback<Note> {
             override fun onFailure(call: Call<Note>, t: Throwable) {
-                Log.wtf("Notes", "get fail")
+                Log.wtf("justget", "fail")
             }
             override fun onResponse(call: Call<Note>, response: Response<Note>) {
-                Log.d("Notes", "got ${response.body()}")
+                Log.d("justget", "got ${response.body()}")
             }
         })
     }
 
     fun getAllNotes(token: String?) {
+        //или вместо viewModelScope попробовать CoroutineScope(Dispatchers.IO)
         viewModelScope.launch {
-            notes = notesRepository.getAllNotes(token).toMutableList()
+            val myNotes = notesRepository.getAllNotes("Bearer $token").toMutableList()
+            notes = myNotes.toMutableList()
         }
     }
 

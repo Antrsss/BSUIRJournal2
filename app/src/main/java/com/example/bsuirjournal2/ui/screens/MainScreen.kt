@@ -39,6 +39,7 @@ import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.roomdatabase.State
+import com.example.bsuirjournal2.roomdatabase.SubjectState
 import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
 import com.example.bsuirjournal2.viewmodels.AuthorisationViewModel
 import com.example.bsuirjournal2.viewmodels.ScheduleUiState
@@ -51,10 +52,8 @@ fun MainScreen(
     authorisationViewModel: AuthorisationViewModel,
     sharedPreferences: SharedPreferences,
     scheduleUiState: ScheduleUiState,
-    retryAction: () -> Unit,
     modifier: Modifier
 ) {
-    Log.d("MyUi", "MainScreen!")
     when (scheduleUiState) {
         is ScheduleUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is ScheduleUiState.Success -> {
@@ -62,14 +61,18 @@ fun MainScreen(
             GroupApiHolder.currentWeekSchedule = scheduleUiState.schedule.schedules
             GroupApiHolder.createListOfSubjects()
 
-            Log.d("MyUi", "Schedule screen achieved")
-            Log.d("database", "${state.subjectsStates.size} < ${GroupApiHolder.uniqueSubjects.size}")
+            Log.d("MyUi", "Initial state size: ${state.subjectsStates.size}")
+            Log.d("MyUi", "Unique subjects size: ${GroupApiHolder.uniqueSubjects.size}")
 
             if (state.subjectsStates.size < GroupApiHolder.uniqueSubjects.size) {
+                Log.d("MyUi", "Saving new subject state")
                 onEvent(SubjectStateEvent.SaveSubjectState)
+            } else if (state.subjectsStates.size > GroupApiHolder.uniqueSubjects.size) {
+                Log.d("MyUi", "Deleting excess subject state")
+                //onEvent(SubjectStateEvent.DeleteSubjectState(state.subjectsStates[10]))
             }
 
-            Log.d("database", "New ${state.subjectsStates.size} < ${GroupApiHolder.uniqueSubjects.size}")
+            Log.d("MyUi", "New state size: ${state.subjectsStates.size}")
 
             ScheduleScreen(
                 state = state,
@@ -81,7 +84,7 @@ fun MainScreen(
                 navController = navController
             )
         }
-        is ScheduleUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
+        is ScheduleUiState.Error -> ErrorScreen(modifier = modifier.fillMaxSize())
     }
 }
 
@@ -105,21 +108,6 @@ fun ScheduleScreen(
             text = "Неделя $currentWeek",
             fontSize = 20.sp
         )
-        Row {
-        Button(onClick = {
-            authorisationViewModel.authorised = false
-            navController.navigate(BSUIRJournalScreen.Authorisation.name)
-        }
-        ) {
-            Text(text = "Выйти")
-        }
-        Button(onClick = {
-            navController.navigate(BSUIRJournalScreen.Notes.name)
-        }
-        ) {
-            Text(text = "Заметки")
-        }
-    }
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
@@ -160,7 +148,6 @@ fun ScheduleScreen(
         ) {
             items(state.subjectsStates) { item ->
                 item!!.let {
-                    Log.d("MyUi", "Item Success!")
                     Row(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -171,7 +158,6 @@ fun ScheduleScreen(
 
                         val rollNo = state.subjectsStates.indexOf(it)
                         val currentSubject = listOfSubjects[rollNo]
-                        Log.d("MyUi", "CurrentSubject ${state.subjectsStates.indexOf(it)}")
                         val subjectState = item
 
                         val subjectPaintersState = mutableListOf(
@@ -183,8 +169,6 @@ fun ScheduleScreen(
                             subjectState.saturday,
                             subjectState.sunday
                         )
-
-                        Log.d("MyUi", "States Success")
 
                         var checkedDay = remember {
                             mutableStateOf(Pair(rollNo, 7))
@@ -418,6 +402,7 @@ fun ChooseCheckSquareDialog(
 }
 
 fun updateDayState(checkedDay: MutableState<Pair<Int, Int>>, painterState: String, onEvent: (SubjectStateEvent) -> Unit) {
+    Log.d("MyUi", "update")
     if (checkedDay.value.second == 0) {
         onEvent(SubjectStateEvent.UpdateMonday(painterState, checkedDay.value.first))
     }

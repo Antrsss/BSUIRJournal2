@@ -24,16 +24,14 @@ sealed interface ScheduleUiState {
     object Loading : ScheduleUiState
 }
 
-class ScheduleViewModel(
-    val groupNumber: String?,
-    val groupNumbersRepository: GroupNumbersRepository
-) : ViewModel() {
+class ScheduleViewModel(val groupNumber: String?, val groupNumbersRepository: GroupNumbersRepository) : ViewModel() {
     var scheduleUiState: ScheduleUiState by mutableStateOf(ScheduleUiState.Loading)
         private set
-    init {
-        getGroupSchedule()
+
+    init{
+        getGroupSchedule(groupNumber)
     }
-    fun getGroupSchedule() {
+    fun getGroupSchedule(groupNumber: String?) {
         viewModelScope.launch {
             scheduleUiState = ScheduleUiState.Loading
             try {

@@ -1,7 +1,7 @@
 package com.example.bsuirjournal2.roomdatabase
 
 data class State(
-    val subjectsStates: List<SubjectState> = emptyList(),
+    var subjectsStates: List<SubjectState> = emptyList(),
     val monday: String = "clearPainter",
     val tuesday: String = "clearPainter",
     val wednesday: String = "clearPainter",

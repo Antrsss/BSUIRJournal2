@@ -67,6 +67,12 @@ dependencies {
     implementation("androidx.navigation:navigation-runtime-ktx:2.7.7")
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
+    implementation ("androidx.compose.ui:ui:1.3.0")
+    implementation ("androidx.compose.material:material:1.3.0")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.3.0")
+    implementation ("androidx.navigation:navigation-compose:2.5.3")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.3.0")
+
     // Retrofit
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

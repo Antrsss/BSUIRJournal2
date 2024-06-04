@@ -33,6 +33,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,20 +49,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.bsuirjournal2.R
 import com.example.bsuirjournal2.data.GroupApiHolder
 import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
+import com.example.bsuirjournal2.viewmodels.AuthorisationViewModel
 import com.example.bsuirjournal2.viewmodels.GroupsUiState
+import com.example.bsuirjournal2.viewmodels.ScheduleViewModel
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
     groupsUiState: GroupsUiState,
+    authorisationViewModel: AuthorisationViewModel,
     sharedPreferences: SharedPreferences,
-    editor: SharedPreferences.Editor,
+    editor: Editor,
     onEvent: (SubjectStateEvent) -> Unit,
-    retryAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -67,13 +74,17 @@ fun HomeScreen(
         is GroupsUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is GroupsUiState.Success -> {
 
+            Log.d("MyUi", "The problem7")
             GroupApiHolder.currentWeek = groupsUiState.currentWeek
+            Log.d("MyUi", "TLastWeek ${GroupApiHolder.lastWeek}")
+            Log.d("MyUi", "TLastWeek ${GroupApiHolder.currentWeek}")
 
             if (GroupApiHolder.lastWeek != GroupApiHolder.currentWeek) {
+                editor.putInt("lastWeek", groupsUiState.currentWeek)
                 onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
             }
 
-            val currentGroup = sharedPreferences.getString("selectedGroup", null)
+            val currentGroup = sharedPreferences.getString("currentGroup", null)
             GroupApiHolder.currentGroup = currentGroup
 
             val currentSubgroup = sharedPreferences.getInt("subgroup", 0)
@@ -84,6 +95,17 @@ fun HomeScreen(
 
             val callChooseNumSubgroupDialog = remember { mutableStateOf(false) }
 
+            Log.d("MyUi", "CurGroup ${GroupApiHolder.currentGroup}")
+
+            if (callChooseNumSubgroupDialog.value == true) {
+                Log.d("MyUi", "The problem8")
+                ChooseNumSubgroupDialog(
+                    navController = navController,
+                    editor = editor,
+                    onDismissRequest = callChooseNumSubgroupDialog
+                )
+            }
+
             if (GroupApiHolder.currentGroup == null) {
 
                 GroupListScreen(
@@ -92,7 +114,7 @@ fun HomeScreen(
                     },
                     onGroupCardClicked = {
                         editor.apply{
-                            putString("selectedGroup", it)
+                            putString("currentGroup", it)
                             apply()
                         }
                         GroupApiHolder.currentGroup = it
@@ -108,17 +130,8 @@ fun HomeScreen(
             else {
                 navController.navigate(BSUIRJournalScreen.Schedule.name)
             }
-
-            if (callChooseNumSubgroupDialog.value == true) {
-
-                ChooseNumSubgroupDialog(
-                    navController = navController,
-                    editor = editor,
-                    onDismissRequest = callChooseNumSubgroupDialog
-                )
-            }
         }
-        is GroupsUiState.Error -> ErrorScreen(retryAction = retryAction, modifier = modifier.fillMaxSize())
+        is GroupsUiState.Error -> ErrorScreen(modifier = modifier.fillMaxSize())
     }
 }
 
@@ -132,7 +145,7 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
+fun ErrorScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
@@ -142,9 +155,6 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
             painter = painterResource(id = R.drawable.ic_connection_error), contentDescription = ""
         )
         Text(text = stringResource(R.string.loading_failed), modifier = Modifier.padding(16.dp))
-        Button(onClick = retryAction) {
-            Text(stringResource(R.string.retry))
-        }
     }
 }
 
@@ -155,13 +165,14 @@ fun ChooseNumSubgroupDialog(
     onDismissRequest: MutableState<Boolean>
 ) {
     Dialog(
-        onDismissRequest = { onDismissRequest.value = false }
+        onDismissRequest = { onDismissRequest.value = false },
     ) {
         Card(
             modifier = Modifier
                 .wrapContentSize()
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background)
         ) {
             Column (
                 modifier = Modifier

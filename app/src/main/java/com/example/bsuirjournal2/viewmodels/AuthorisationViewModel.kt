@@ -29,7 +29,7 @@ class AuthorisationViewModel(
     private val authorisationRepository: AuthorisationRepository
 ) : ViewModel() {
 
-    var authorised: Boolean by mutableStateOf(false)
+    var authorised = false
     var username: String? = null
     var password: String? = null
     var token: String? = null
