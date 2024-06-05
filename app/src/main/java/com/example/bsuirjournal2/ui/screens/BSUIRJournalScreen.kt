@@ -231,6 +231,7 @@ fun Navigation (
                         }
                     }
 
+                    notesViewModel.getAllNotes(authorisationViewModel.token)
                     HomeScreen(
                         navController = navController,
                         groupsUiState = groupsViewModel.groupsUiState,
@@ -263,6 +264,7 @@ fun Navigation (
                 composable(route = BSUIRJournalScreen.Notes.name) {
 
                     if (authorisationViewModel.authorised) {
+
                         NoteScreen(
                             notesViewModel = notesViewModel,
                             authorisationViewModel = authorisationViewModel,
