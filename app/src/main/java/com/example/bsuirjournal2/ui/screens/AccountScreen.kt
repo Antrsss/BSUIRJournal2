@@ -27,6 +27,7 @@ import com.example.bsuirjournal2.model.User
 import com.example.bsuirjournal2.roomdatabase.State
 import com.example.bsuirjournal2.roomdatabase.SubjectState
 import com.example.bsuirjournal2.roomdatabase.SubjectStateEvent
+import com.example.bsuirjournal2.viewmodels.AuthorisationUiState
 import com.example.bsuirjournal2.viewmodels.AuthorisationViewModel
 
 @Composable
@@ -72,7 +73,6 @@ fun AccountScreen(
             if (isRegistrationButtonVisible) {
                 Button(
                     onClick = {
-                        isRegistrationButtonVisible = false
                         authorisationViewModel.registerUser(
                             user = User(
                                 id = 0,
@@ -80,10 +80,6 @@ fun AccountScreen(
                                 password = password.value
                             )
                         )
-                        editor.apply {
-                            editor.putString("password", password.value)
-                            commit()
-                        }
                     },
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -93,7 +89,6 @@ fun AccountScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    authorisationViewModel.authorised = true
                     authorisationViewModel.authoriseUser(
                         user = User(
                             id = 0,
@@ -101,13 +96,6 @@ fun AccountScreen(
                             password = password.value
                         )
                     )
-                    editor.apply {
-                        editor.putBoolean("authorised", true)
-                        putString("username", username.value)
-                        putString("token", authorisationViewModel.token)
-                        commit()
-                    }
-                    navController.navigate(BSUIRJournalScreen.GroupList.name)
                 },
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -116,25 +104,7 @@ fun AccountScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    authorisationViewModel.authorised = false
-
-                    GroupApiHolder.uniqueSubjects = emptyList()
-                    GroupApiHolder.listOfSubjects.clear()
-                    GroupApiHolder.currentGroup = null
-                    GroupApiHolder.currentSubgroup = null
-                    GroupApiHolder.currentWeekSchedule = null
-                    onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
-                    state.subjectsStates = emptyList<SubjectState>()
-
-                    editor.apply {
-                        putBoolean("authorised", false)
-                        putString("username", null)
-                        putString("token", null)
-                        putString("currentGroup", null)
-                        putInt("subgroup", 0)
-                        commit()
-                    }
-
+                    authorisationViewModel.authorisationUiState = AuthorisationUiState.Unauthorised
                     navController.navigate(BSUIRJournalScreen.Authorisation.name)
                 },
                 shape = RoundedCornerShape(16.dp)

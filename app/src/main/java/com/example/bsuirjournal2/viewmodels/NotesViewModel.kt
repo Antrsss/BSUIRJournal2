@@ -42,6 +42,7 @@ class NotesViewModel(
         notesRepository.postANote("Bearer $token", noteToPost).enqueue(object : Callback<Note> {
             override fun onResponse(call: Call<Note>, response: Response<Note>) {
                 viewModelScope.launch {
+                    notesUiState = NotesUiState.Loading
                     notesUiState = try {
                         NotesUiState.Success(
                             notesRepository.getAllNotes("Bearer $token")
@@ -65,6 +66,7 @@ class NotesViewModel(
         notesRepository.patchANote("Bearer $token", id, noteToPatch).enqueue(object : Callback<Note> {
             override fun onResponse(call: Call<Note>, response: Response<Note>) {
                 viewModelScope.launch {
+                    notesUiState = NotesUiState.Loading
                     notesUiState = try {
                         NotesUiState.Success(
                             notesRepository.getAllNotes("Bearer $token")
@@ -96,6 +98,7 @@ class NotesViewModel(
                 response: Response<Note>
             ) {
                 viewModelScope.launch {
+                    notesUiState = NotesUiState.Loading
                     notesUiState = try {
                         NotesUiState.Success(
                             notesRepository.getAllNotes("Bearer $token")

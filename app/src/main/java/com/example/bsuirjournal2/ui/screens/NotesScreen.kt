@@ -196,14 +196,6 @@ fun NotesList(
                             onClick = {
                                 notesViewModel.deleteANote(token, note.id)
                                 notesList.value.remove(note)
-                                /*notesViewModel.getAllNotes(token)
-                                when (notesUiState) {
-                                    is NotesUiState.Loading -> {}
-                                    is NotesUiState.Success -> {
-                                        notesList.value = notesUiState.notes.toMutableList()
-                                    }
-                                    is NotesUiState.Error -> {}
-                                }*/
                                       },
                             modifier = Modifier.width(115.dp)
                         ) {

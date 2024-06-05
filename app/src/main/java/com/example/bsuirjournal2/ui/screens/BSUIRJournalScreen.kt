@@ -1,7 +1,6 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,7 +9,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -43,9 +41,12 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.rememberNavController
-import com.example.bsuirjournal2.ui.theme.BSUIRJournal2Theme
+import com.example.bsuirjournal2.roomdatabase.SubjectState
 import com.example.bsuirjournal2.ui.theme.primaryContainerLight
+import com.example.bsuirjournal2.viewmodels.AuthorisationUiState
 
 enum class BSUIRJournalScreen() {
     Authorisation,
@@ -178,60 +179,98 @@ fun Navigation (
 
             authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
 
+            if (authorisationViewModel.authorised) {
+                authorisationViewModel.authorisationUiState = AuthorisationUiState.Authorised(
+                    authorisedFirst = true,
+                    tokenFirst = sharedPreferences.getString("token", null),
+                    usernameFirst = sharedPreferences.getString("username", null)
+                )
+                authorisationViewModel.username = sharedPreferences.getString("username", null)
+                authorisationViewModel.token = sharedPreferences.getString("token", null)
+            }
+
             NavHost(
                 navController = navController,
                 startDestination = BSUIRJournalScreen.Authorisation.name,
                 modifier = Modifier.padding(innerPadding),
             ) {
                 composable(route = BSUIRJournalScreen.Authorisation.name) {
+                    val authorisationUiState = authorisationViewModel.authorisationUiState
 
-                    if (!authorisationViewModel.authorised) {
+                    when (authorisationUiState) {
+                        is AuthorisationUiState.Unauthorised -> {
 
-                        editor.apply {
-                            putBoolean("authorised", false)
-                            putString("username", null)
-                            putString("token", null)
-                            putString("currentGroup", null)
-                            putInt("subgroup", 0)
-                            commit()
+                            authorisationViewModel.authorised = false
+
+                            GroupApiHolder.uniqueSubjects = emptyList()
+                            GroupApiHolder.listOfSubjects.clear()
+                            GroupApiHolder.currentGroup = null
+                            GroupApiHolder.currentSubgroup = null
+                            GroupApiHolder.currentWeekSchedule = null
+
+                            editor.apply {
+                                putBoolean("authorised", false)
+                                putString("username", null)
+                                putString("token", null)
+                                putString("currentGroup", null)
+                                putInt("subgroup", 0)
+                                commit()
+                            }
+                            onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
+                            state.subjectsStates = emptyList<SubjectState>()
+
+                            var isRegistartionButtonVisible = remember { mutableStateOf(true) }
+
+                            AuthorisationScreen(
+                                authorisationViewModel = authorisationViewModel,
+                                isRegistartionButtonVisible = isRegistartionButtonVisible,
+                                navController = navController,
+                                editor = editor,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
-                        onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
+                        is AuthorisationUiState.Registered -> {
 
-                        AuthorisationScreen(
-                            authorisationViewModel = authorisationViewModel,
-                            navController = navController,
-                            editor = editor,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    else {
-                        authorisationViewModel.username = sharedPreferences.getString("username", null)
+                            var isRegistartionButtonVisible = remember { mutableStateOf(false) }
 
-                        if (authorisationViewModel.token == null) {
-                            authorisationViewModel.token = sharedPreferences.getString("token", null)
+                            AuthorisationScreen(
+                                authorisationViewModel = authorisationViewModel,
+                                isRegistartionButtonVisible = isRegistartionButtonVisible,
+                                navController = navController,
+                                editor = editor,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
-                        else {
-                            editor.putString("token", authorisationViewModel.token)
-                            editor.commit()
-                        }
+                        is AuthorisationUiState.Authorised -> {
+                            editor.apply {
+                                putBoolean("authorised", true)
+                                putString("token", authorisationUiState.tokenFirst)
+                                putString("username", authorisationUiState.usernameFirst)
+                                commit()
+                            }
+                            authorisationViewModel.authorised = true
+                            authorisationViewModel.username = authorisationUiState.usernameFirst
+                            authorisationViewModel.token = authorisationUiState.tokenFirst
 
-                        navController.navigate(BSUIRJournalScreen.GroupList.name)
+                            notesViewModel.getAllNotes(authorisationViewModel.token)
+
+                            navController.navigate(BSUIRJournalScreen.GroupList.name)
+                        }
+                        is AuthorisationUiState.Error -> {
+                            var isRegistartionButtonVisible = remember { mutableStateOf(true) }
+
+                            AuthorisationScreen(
+                                authorisationViewModel = authorisationViewModel,
+                                isRegistartionButtonVisible = isRegistartionButtonVisible,
+                                navController = navController,
+                                editor = editor,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
                 }
                 composable(route = BSUIRJournalScreen.GroupList.name) {
 
-                    authorisationViewModel.authorised = sharedPreferences.getBoolean("authorised", false)
-                    if (authorisationViewModel.authorised) {
-                        if (authorisationViewModel.token != null) {
-                            editor.apply {
-                                putString("token", authorisationViewModel.token)
-                                putString("username", authorisationViewModel.username)
-                                commit()
-                            }
-                        }
-                    }
-
-                    notesViewModel.getAllNotes(authorisationViewModel.token)
                     HomeScreen(
                         navController = navController,
                         groupsUiState = groupsViewModel.groupsUiState,
@@ -277,14 +316,19 @@ fun Navigation (
                 }
                 composable(route = BSUIRJournalScreen.Account.name) {
 
-                    AccountScreen(
-                        authorisationViewModel = authorisationViewModel,
-                        navController = navController,
-                        state = state,
-                        onEvent = onEvent,
-                        editor = editor,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    if (authorisationViewModel.authorisationUiState == AuthorisationUiState.Unauthorised) {
+                        navController.navigate(BSUIRJournalScreen.Authorisation.name)
+                    }
+                    else {
+                        AccountScreen(
+                            authorisationViewModel = authorisationViewModel,
+                            navController = navController,
+                            state = state,
+                            onEvent = onEvent,
+                            editor = editor,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }

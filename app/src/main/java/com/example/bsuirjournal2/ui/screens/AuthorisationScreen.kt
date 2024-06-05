@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import com.example.bsuirjournal2.viewmodels.GroupsViewModel
 @Composable
 fun AuthorisationScreen(
     authorisationViewModel: AuthorisationViewModel,
+    isRegistartionButtonVisible: MutableState<Boolean>,
     navController: NavController,
     editor: SharedPreferences.Editor,
     modifier: Modifier
@@ -39,8 +41,6 @@ fun AuthorisationScreen(
 
     val username = remember{ mutableStateOf("") }
     val password = remember{ mutableStateOf("") }
-
-    var isRegistartionButtonVisible by remember { mutableStateOf(true) }
 
     Column (
         verticalArrangement = Arrangement.Top,
@@ -67,10 +67,9 @@ fun AuthorisationScreen(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Row {
-            if (isRegistartionButtonVisible) {
+            if (isRegistartionButtonVisible.value) {
                 Button(
                     onClick = {
-                        isRegistartionButtonVisible = false
                         authorisationViewModel.registerUser(
                             user = User(
                                 id = 0,
@@ -78,10 +77,6 @@ fun AuthorisationScreen(
                                 password = password.value
                             )
                         )
-                        editor.apply {
-                            putString("password", password.value)
-                            commit()
-                        }
                     },
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -91,7 +86,6 @@ fun AuthorisationScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
-                    authorisationViewModel.authorised = true
                     authorisationViewModel.authoriseUser(
                         user = User(
                             id = 0,
@@ -99,13 +93,6 @@ fun AuthorisationScreen(
                             password = password.value
                         )
                     )
-                    editor.apply {
-                        putBoolean("authorised", true)
-                        putString("token", authorisationViewModel.token)
-                        putString("username", username.value)
-                        commit()
-                    }
-                    navController.navigate(BSUIRJournalScreen.GroupList.name)
                 },
                 shape = RoundedCornerShape(16.dp)
             ) {
