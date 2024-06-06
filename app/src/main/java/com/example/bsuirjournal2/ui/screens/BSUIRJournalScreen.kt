@@ -1,6 +1,7 @@
 package com.example.bsuirjournal2.ui.screens
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -41,8 +42,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.navigation.compose.rememberNavController
 import com.example.bsuirjournal2.roomdatabase.SubjectState
 import com.example.bsuirjournal2.ui.theme.primaryContainerLight
@@ -196,6 +195,7 @@ fun Navigation (
             ) {
                 composable(route = BSUIRJournalScreen.Authorisation.name) {
                     val authorisationUiState = authorisationViewModel.authorisationUiState
+                    Log.d("MyUi", "${authorisationViewModel.authorisationUiState}")
 
                     when (authorisationUiState) {
                         is AuthorisationUiState.Unauthorised -> {
@@ -216,14 +216,29 @@ fun Navigation (
                                 putInt("subgroup", 0)
                                 commit()
                             }
+
                             onEvent(SubjectStateEvent.DeleteAllSubjectsStates)
                             state.subjectsStates = emptyList<SubjectState>()
 
-                            var isRegistartionButtonVisible = remember { mutableStateOf(true) }
+                            AuthorisationScreen(
+                                authorisationViewModel = authorisationViewModel,
+                                showFailRegDialog = false,
+                                showSuccessDialog = false,
+                                showFailAuthDialog = false,
+                                isExitVisible = false,
+                                navController = navController,
+                                editor = editor,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        is AuthorisationUiState.FailToRegister -> {
 
                             AuthorisationScreen(
                                 authorisationViewModel = authorisationViewModel,
-                                isRegistartionButtonVisible = isRegistartionButtonVisible,
+                                showFailRegDialog = true,
+                                showSuccessDialog = false,
+                                showFailAuthDialog = false,
+                                isExitVisible = false,
                                 navController = navController,
                                 editor = editor,
                                 modifier = Modifier.fillMaxSize()
@@ -231,11 +246,25 @@ fun Navigation (
                         }
                         is AuthorisationUiState.Registered -> {
 
-                            var isRegistartionButtonVisible = remember { mutableStateOf(false) }
+                            AuthorisationScreen(
+                                authorisationViewModel = authorisationViewModel,
+                                showFailRegDialog = false,
+                                showSuccessDialog = true,
+                                showFailAuthDialog = false,
+                                isExitVisible = true,
+                                navController = navController,
+                                editor = editor,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        is AuthorisationUiState.FailToAuthorise -> {
 
                             AuthorisationScreen(
                                 authorisationViewModel = authorisationViewModel,
-                                isRegistartionButtonVisible = isRegistartionButtonVisible,
+                                showFailRegDialog = false,
+                                showSuccessDialog = false,
+                                showFailAuthDialog = true,
+                                isExitVisible = false,
                                 navController = navController,
                                 editor = editor,
                                 modifier = Modifier.fillMaxSize()
@@ -256,17 +285,8 @@ fun Navigation (
 
                             navController.navigate(BSUIRJournalScreen.GroupList.name)
                         }
-                        is AuthorisationUiState.Error -> {
-                            var isRegistartionButtonVisible = remember { mutableStateOf(true) }
-
-                            AuthorisationScreen(
-                                authorisationViewModel = authorisationViewModel,
-                                isRegistartionButtonVisible = isRegistartionButtonVisible,
-                                navController = navController,
-                                editor = editor,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
+                        is AuthorisationUiState.Loading -> LoadingScreen(Modifier.fillMaxSize())
+                        is AuthorisationUiState.Error -> ErrorScreen(Modifier.fillMaxSize())
                     }
                 }
                 composable(route = BSUIRJournalScreen.GroupList.name) {
@@ -316,18 +336,21 @@ fun Navigation (
                 }
                 composable(route = BSUIRJournalScreen.Account.name) {
 
-                    if (authorisationViewModel.authorisationUiState == AuthorisationUiState.Unauthorised) {
-                        navController.navigate(BSUIRJournalScreen.Authorisation.name)
-                    }
-                    else {
-                        AccountScreen(
+                    if (authorisationViewModel.authorised) {
+
+                        AuthorisationScreen(
                             authorisationViewModel = authorisationViewModel,
+                            showFailRegDialog = false,
+                            showFailAuthDialog = false,
+                            showSuccessDialog = false,
+                            isExitVisible = true,
                             navController = navController,
-                            state = state,
-                            onEvent = onEvent,
                             editor = editor,
                             modifier = Modifier.fillMaxSize()
                         )
+                    }
+                    else {
+                        navController.navigate(BSUIRJournalScreen.Authorisation.name)
                     }
                 }
             }
